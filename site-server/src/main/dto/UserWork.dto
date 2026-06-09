@@ -1,0 +1,55 @@
+export cn.jinynet.site.entity.UserWork
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于工作经验列表展示
+UserWorkList {
+    id
+    companyName
+    position
+    startDate
+    endDate
+    sortOrder
+}
+
+// 详情视图 - 用于工作经验详情展示
+UserWorkDetail {
+    id
+    companyName
+    position
+    startDate
+    endDate
+    description
+    achievements
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+PublicUserWorkDetail {
+    id
+    companyNameShow
+    position
+    description
+    startDate
+    endDate
+    sortOrder
+}
+
+// 表单视图 - 用于创建/编辑工作经验
+input UserWorkForm {
+    companyName
+    position
+    startDate
+    endDate
+    description
+    achievements
+    sortOrder
+}
+
+// 列表查询条件 - 用于动态查询
+specification UserWorkSpecification {
+    like(companyName)
+    like(position)
+    ge(startDate)
+    le(endDate)
+}

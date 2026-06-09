@@ -1,0 +1,40 @@
+export cn.jinynet.site.entity.SystemSettings
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于系统设置列表展示
+SystemSettingsList {
+    id
+    settingKey
+    settingType
+    category
+}
+
+// 详情视图 - 用于系统设置详情展示
+SystemSettingsDetail {
+    id
+    settingKey
+    settingValue
+    settingType
+    description
+    category
+    createdAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑系统设置
+// settingValue, description 已在实体中标记为 @Nullable，无需加 ?
+input SystemSettingsForm {
+    settingKey
+    settingValue
+    settingType
+    description
+    category
+}
+
+// 列表查询条件 - 用于动态查询
+specification SystemSettingsSpecification {
+    like(settingKey)
+    like(settingType)
+    like(description)
+    eq(category)
+}

@@ -1,0 +1,40 @@
+export cn.jinynet.site.entity.ArticleTag
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于文章标签列表展示
+ArticleTagList {
+    id
+    name
+    slug
+    color
+    description
+    sortOrder
+}
+
+// 详情视图 - 用于文章标签详情展示
+ArticleTagDetail {
+    id
+    name
+    slug
+    color
+    description
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑文章标签
+// color, description 已在实体中标记为 @Nullable，无需加 ?
+input ArticleTagForm {
+    name
+    slug
+    color
+    description
+    sortOrder
+}
+
+// 列表查询条件 - 用于动态查询
+specification ArticleTagSpecification {
+    like(name)
+    like(slug)
+}

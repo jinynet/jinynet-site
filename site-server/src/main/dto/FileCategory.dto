@@ -1,0 +1,17 @@
+export cn.jinynet.site.entity.FileCategory
+ // -> package cn.jinynet.site.entity.dto
+
+input FileCategoryForm {
+    id?
+    name
+    code
+    description
+    icon
+    sortOrder
+}
+
+
+specification FileCategorySpecification {
+    like(name)
+    like(code)
+}

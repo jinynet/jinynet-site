@@ -1,0 +1,102 @@
+[Unit]
+Description=Jinynet Site Service (Spring Boot)
+Documentation=https://github.com/jinynet/jinynet-site
+After=network-online.target docker.service
+Requires=network-online.target docker.service
+Wants=docker.service
+
+[Service]
+# ======================== 基础配置 ========================
+# 运行用户（强烈建议创建专用用户替换 root）
+# sudo useradd -r -s /bin/false jinty
+User=jinty
+Group=jinty
+
+# 工作目录
+WorkingDirectory=/opt/apps/jar
+
+# ======================== 启动配置 ========================
+# Type=forking：配合 start.sh 的 nohup & 后台启动
+Type=forking
+PIDFile=/opt/apps/jar/sitejar.pid
+
+# 启动命令
+ExecStart=/bin/bash /opt/apps/jar/start.sh start
+ExecStop=/bin/bash /opt/apps/jar/start.sh stop
+ExecReload=/bin/kill -HUP $MAINPID
+
+# ======================== 重启策略 ========================
+Restart=on-failure
+RestartSec=10
+# 5 分钟内最多重启 5 次，防止无限重启循环
+StartLimitBurst=5
+StartLimitInterval=300
+StartLimitAction=reboot-force
+
+# ======================== 超时配置 ========================
+# 启动超时（含健康检查等待时间）
+TimeoutStartSec=90
+# 停止超时（给 Spring Boot 优雅关闭留足时间）
+TimeoutStopSec=70
+# 最终 SIGKILL 前的等待
+TimeoutAbortSec=10
+
+# ======================== 环境变量 ========================
+# 可选：从文件加载环境变量
+EnvironmentFile=-/opt/apps/jar/.env
+
+# 手动设置环境变量（按需启用）
+# Environment=JAVA_HOME=/usr/lib/jvm/java-17
+# Environment=SPRING_PROFILES_ACTIVE=prod
+
+# ======================== 安全加固 ========================
+# 说明：以下配置兼顾安全性与 Java 运行时兼容性
+# ProtectSystem=full：/usr、/etc 只读，/dev、/proc、/sys 可访问
+# PrivateDevices=yes：独立 /dev，仅提供基础设备节点（含 /dev/urandom）
+
+# 禁止进程获取新权限
+NoNewPrivileges=yes
+# 保护 /proc —— 隐藏其他进程信息
+ProtectProc=invisible
+# 禁止修改内核参数、加载内核模块、读取内核日志
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+# 禁止修改系统时钟和控制组
+ProtectClock=yes
+ProtectControlGroups=yes
+# /usr、/etc 只读（使用 full 而非 strict，保证 /dev、/proc、/sys 可访问）
+ProtectSystem=full
+# 禁止访问 /home、/root
+ProtectHome=yes
+# 独立的 /tmp（与系统 /tmp 隔离）
+PrivateTmp=yes
+# 独立的 /dev（仅提供 /dev/null、/dev/random 等基础设备）
+PrivateDevices=yes
+
+# 显式授权可读写路径（Java 需要写日志、PID、GC dump 等）
+ReadWritePaths=/opt/apps/jar
+
+# ======================== 资源限制 ========================
+# 允许打开的最大文件数
+LimitNOFILE=65536
+# 允许的最大进程数
+LimitNPROC=4096
+# 核心转储
+LimitCORE=infinity
+
+# ======================== 日志 ========================
+# 日志输出到 journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=site-server
+
+# ======================== Kill 模式 ========================
+# mixed：先 SIGTERM（主进程），超时后 SIGKILL（所有进程）
+KillMode=mixed
+KillSignal=SIGTERM
+# 给进程 30 秒处理 SIGTERM，之后 systemd 介入
+SendSIGKILL=yes
+
+[Install]
+WantedBy=multi-user.target

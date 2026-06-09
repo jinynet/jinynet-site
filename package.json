@@ -1,0 +1,12 @@
+{
+  "name": "jinynet-site",
+  "private": true,
+  "scripts": {
+    "dev:site": "pnpm --filter site-webui dev",
+    "build:site": "pnpm --filter site-webui build",
+    "preview:site": "pnpm --filter site-webui preview"
+  },
+  "dependencies": {
+    "sm-crypto": "^0.4.0"
+  }
+}

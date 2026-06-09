@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 继承 jinynet-config-preset 共享日志策略：控制台+文件+SQL+异步，dev/prod 自适应 -->
+    <include resource="preset/logback-base.xml"/>
+</configuration>

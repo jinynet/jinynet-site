@@ -1,0 +1,40 @@
+export cn.jinynet.site.entity.UserContact
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于联系方式列表展示
+UserContactList {
+    id
+    contactType
+    contactValue
+    displayName
+    icon
+    sortOrder
+}
+
+// 详情视图 - 用于联系方式详情展示
+UserContactDetail {
+    id
+    contactType
+    contactValue
+    displayName
+    icon
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑联系方式
+input UserContactForm {
+    contactType
+    contactValue
+    displayName
+    icon
+    sortOrder
+}
+
+// 列表查询条件 - 用于动态查询
+specification UserContactSpecification {
+    eq(contactType)
+    like(contactValue)
+    like(displayName)
+}

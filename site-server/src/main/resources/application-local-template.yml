@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/site
+    username: pgsql_username
+    password: pgsql_password
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 2
+      password: redis_password
+jetcache:
+  remote:
+    default:
+      uri: redis://redis_password@127.0.0.1:6379/2?timeout=3000ms
+
+jinynet:
+  crypto:
+    sm4:
+      key: 16bit string_key

@@ -1,0 +1,36 @@
+export cn.jinynet.site.entity.ArticleCategory
+// -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于文章分类列表展示
+ArticleCategoryList {
+    id
+    name
+    slug
+    sortOrder
+}
+
+// 详情视图 - 用于文章分类详情展示
+ArticleCategoryDetail {
+    id
+    name
+    slug
+    description
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑文章分类
+// description 已在实体中标记为 @Nullable，无需加 ?
+input ArticleCategoryForm {
+    name
+    slug
+    description
+    sortOrder
+}
+
+// 列表查询条件 - 用于动态查询
+specification ArticleCategorySpecification {
+    like(name)
+    like(slug)
+}

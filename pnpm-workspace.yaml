@@ -1,0 +1,5 @@
+# pnpm workspace 定义
+# 声明哪些目录是工作空间成员，它们之间可以通过 workspace:* 协议互相引用
+packages:
+  - 'packages/*'
+  - 'site-webui'

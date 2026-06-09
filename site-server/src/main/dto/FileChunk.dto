@@ -1,0 +1,21 @@
+export cn.jinynet.site.entity.FileChunk
+ // -> package cn.jinynet.site.entity.dto
+
+FileChunkInfo {
+    id
+    uploadId
+    filename
+    chunkNumber
+    chunkSize
+    path
+    chunkMd5
+    status
+    completedAt
+    createdAt
+}
+
+input FileChunkUpload {
+    uploadId
+    chunkNumber
+    chunkMd5
+}

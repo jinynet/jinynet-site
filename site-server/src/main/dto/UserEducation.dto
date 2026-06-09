@@ -1,0 +1,47 @@
+export cn.jinynet.site.entity.UserEducation
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于教育经历列表展示
+UserEducationList {
+    id
+    schoolName
+    major
+    degree
+    startDate
+    endDate
+    sortOrder
+}
+
+// 详情视图 - 用于教育经历详情展示
+UserEducationDetail {
+    id
+    schoolName
+    major
+    degree
+    startDate
+    endDate
+    description
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑教育经历
+input UserEducationForm {
+    schoolName
+    major
+    degree
+    startDate
+    endDate
+    description
+    sortOrder
+}
+
+// 列表查询条件 - 用于动态查询
+specification UserEducationSpecification {
+    like(schoolName)
+    like(major)
+    eq(degree)
+    ge(startDate)
+    le(endDate)
+}

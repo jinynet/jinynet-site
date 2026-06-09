@@ -1,0 +1,50 @@
+export cn.jinynet.site.entity.UserInfo
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于个人信息列表展示
+UserInfoList {
+    id
+    name
+    nickname
+    avatar
+    title
+    updatedAt
+}
+
+// 详情视图 - 用于个人信息详情展示
+UserInfoDetail {
+    id
+    name
+    nickname
+    avatar
+    title
+    email
+    phone
+    location
+    summary
+    bio
+    updatedAt
+    online: Boolean
+}
+
+// 表单视图 - 用于创建/编辑个人信息
+input UserInfoForm {
+    name
+    nickname
+    avatar
+    title
+    email
+    phone
+    location
+    summary
+    bio
+}
+
+// 列表查询条件 - 用于动态查询
+specification UserInfoSpecification {
+    like(name)
+    like(nickname)
+    like(title)
+    like(email)
+    like(location)
+}

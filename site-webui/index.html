@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" id="favicon" type="image/svg+xml" href="/jinynet-rings.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="Jinynet - 企业级多模块项目管理系统" />
+    
+    <title>Jinynet</title>
+  </head>
+  <body>
+    <div id="app">
+      <!-- 骨架屏 - 优化 FCP -->
+      <style>
+        .app-skeleton {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        }
+        .skeleton-header {
+          height: 64px;
+          background: #ffffff;
+          border-bottom: 1px solid #e5e7eb;
+          animation: shimmer 2s infinite;
+        }
+        .skeleton-sidebar {
+          width: 256px;
+          height: 100vh;
+          background: #ffffff;
+          border-right: 1px solid #e5e7eb;
+        }
+        .skeleton-content {
+          flex: 1;
+          padding: 24px;
+        }
+        .skeleton-card {
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 24px;
+          margin-bottom: 24px;
+          animation: shimmer 2s infinite;
+        }
+        .skeleton-line {
+          height: 16px;
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200% 100%;
+          border-radius: 4px;
+          margin-bottom: 12px;
+          animation: shimmer 1.5s ease-in-out infinite;
+        }
+        .skeleton-line.short {
+          width: 60%;
+        }
+        .skeleton-line.medium {
+          width: 80%;
+        }
+        .skeleton-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        @media (max-width: 1024px) {
+          .skeleton-sidebar {
+            display: none;
+          }
+        }
+      </style>
+      
+      <div class="app-skeleton flex">
+        <div class="skeleton-sidebar fixed left-0 top-0 hidden lg:block"></div>
+        <div class="flex-1">
+          <div class="skeleton-header sticky top-0 z-10"></div>
+          <div class="skeleton-content">
+            <div class="skeleton-card">
+              <div class="skeleton-line medium mb-4"></div>
+              <div class="flex items-center gap-4 mb-6">
+                <div class="skeleton-avatar"></div>
+                <div>
+                  <div class="skeleton-line short"></div>
+                  <div class="skeleton-line"></div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="skeleton-line short h-24 rounded-lg"></div>
+                <div class="skeleton-line short h-24 rounded-lg"></div>
+                <div class="skeleton-line short h-24 rounded-lg"></div>
+                <div class="skeleton-line short h-24 rounded-lg"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+export cn.jinynet.site.entity.Article
+// -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于文章列表展示
+ArticleList {
+    id
+    title
+    slug
+    excerpt
+    coverImage
+    status
+    viewCount
+    likeCount
+    publishedAt
+    updatedAt
+}
+
+// 详情视图 - 用于文章详情展示
+ArticleDetail {
+    id
+    title
+    slug
+    category {
+        id
+        name
+        slug
+    }
+    tags {
+        id
+        name
+        slug
+    }
+    content
+    excerpt
+    coverImage
+    status
+    viewCount
+    likeCount
+    publishedAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑文章
+input ArticleForm {
+    title
+    slug
+    category {
+        id?
+        name
+        slug
+    }
+    tags {
+        id?
+        name
+        slug
+    }
+    content
+    excerpt
+    coverImage
+    status
+}
+
+// 列表查询条件 - 用于动态查询
+// 支持前端查询参数: categoryId, tag, keyword, status
+specification ArticleSpecification {
+    like(title)            // keyword 搜索: 标题
+    like(excerpt)          // keyword 搜索: 摘要
+    like(content)          // keyword 搜索: 内容
+    eq(status)             // 状态筛选: draft/published/private
+    ge(publishedAt)        // 发布时间范围: 开始时间
+    le(publishedAt)        // 发布时间范围: 结束时间
+    eq(categoryId)        // 分类筛选: 分类ID
+    flat(tags) {
+        eq(id) as tagId
+    }
+}

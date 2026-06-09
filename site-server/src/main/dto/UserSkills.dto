@@ -1,0 +1,40 @@
+export cn.jinynet.site.entity.UserSkills
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于技能列表展示
+UserSkillsList {
+    id
+    name
+    category
+    level
+    sortOrder
+}
+
+// 详情视图 - 用于技能详情展示
+UserSkillsDetail {
+    id
+    name
+    category
+    level
+    description
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑技能
+input UserSkillsForm {
+    name
+    category
+    level
+    description
+    sortOrder
+}
+
+// 列表查询条件 - 用于动态查询
+specification UserSkillsSpecification {
+    like(name)
+    eq(category)
+    ge(level)
+    le(level)
+}

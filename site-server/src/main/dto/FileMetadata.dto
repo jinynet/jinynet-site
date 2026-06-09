@@ -1,0 +1,40 @@
+export cn.jinynet.site.entity.FileMetadata
+ // -> package cn.jinynet.site.entity.dto
+
+FileList {
+    id
+    createdAt
+    updatedAt
+    url
+    path
+    filename
+    originalFilename
+    fileExt
+    fileSize
+    contentType
+    platform
+    basePath
+    categoryId
+    categoryName
+    description
+    isPublic
+    fileType
+}
+
+input FileMetadataForm {
+    id?
+    originalFilename
+    categoryId
+    categoryName
+    description
+    isPublic
+}
+
+specification FileMetadataSpecification {
+    like(url)
+    like(filename)
+    like(originalFilename)
+    eq(categoryId)
+    eq(fileType)
+    eq(isPublic)
+}

@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    import:
+      - classpath:application-local.yml
+  datasource:
+    url: ${pgsql.url}
+    username: ${pgsql.username}
+    password: ${pgsql.password}
+  data:
+    redis:
+      host: ${redis.host}
+      port: 6379
+      database: 2
+      password: ${redis.password}
+
+jetcache:
+  remote:
+    default:
+      type: redis.lettuce
+      uri: ${redis.uri}
+      keyConvertor: fastjson
+      valueEncoder: java
+      valueDecoder: java
+
+jimmer:
+  show-sql: true
+  pretty-sql: true
+
+dromara:
+  x-file-storage:
+    local-plus:
+      - platform: local-1
+        enable-storage: true
+        enable-access: true
+        domain: http://localhost:8080/file/
+        path-patterns: /file/**
+        base-path: uploads/
+        storage-path: D:/Temp/ptech/
+        auto-create-directory: true
+
+jinynet:
+  security-headers:
+    enable: false

@@ -1,0 +1,39 @@
+# Git忽略规则（target、.idea、*.iml、node_modules等）
+
+target/
+dist/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+node_modules/
+pnpm-lock.yaml
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
+
+
+### 忽略本地、生产环境配置 ###
+*-prod.yml
+*-prod.json
+*-prod.properties
+
+*-local.yml
+*-local.json
+*-local.properties
+
+.env.production
+.env.local
+
+### 其他 ###
+lucene/
+logs/
+*.log
+auto-imports.d.ts
+components.d.ts

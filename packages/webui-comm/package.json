@@ -1,0 +1,21 @@
+{
+  "name": "@jinynet/webui-comm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jinynet 前端公共模块：请求封装、分页逻辑、通用类型、验证码组件",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "vue": "^3.5.13",
+    "axios": "^1.15.2",
+    "pinia": "^3.0.4"
+  },
+  "peerDependencies": {
+    "naive-ui": "^2.x"
+  }
+}

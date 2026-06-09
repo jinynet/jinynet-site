@@ -1,0 +1,41 @@
+export cn.jinynet.site.entity.ProjectStack
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于项目技术栈列表展示
+ProjectStackList {
+    id
+    name
+    category
+    icon
+    color
+    sortOrder
+}
+
+// 详情视图 - 用于项目技术栈详情展示
+ProjectStackDetail {
+    id
+    name
+    category
+    icon
+    color
+    description
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+// 表单视图 - 用于创建/编辑项目技术栈
+ input ProjectStackForm {
+    name
+    category
+    icon
+    color
+    description
+    sortOrder
+}
+
+// 列表查询条件 - 用于动态查询
+specification ProjectStackSpecification {
+    like(name)
+    eq(category)
+}

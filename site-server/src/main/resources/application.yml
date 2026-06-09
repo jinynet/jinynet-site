@@ -1,0 +1,114 @@
+
+spring:
+  application:
+    name: site-server
+  profiles:
+    active: @spring.profiles.active@
+  config:
+    import:
+      - classpath:preset/application-jinynet.yml
+      - classpath:preset/application-log.yml
+      - classpath:preset/application-jimmer.yml
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10GB
+      max-request-size: -1
+  jackson:
+    locale: zh_CN
+    serialization:
+      write-bigdecimal-as-plain: true
+      write-durations-as-timestamps: true
+      write-enums-using-to-string: true
+    deserialization:
+      fail-on-unknown-properties: false
+    visibility:
+      getter: none
+      setter: none
+  cache:
+    type: REDIS
+    redis:
+      cache-null-values: true
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 1
+      idle-timeout: 60000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+      leak-detection-threshold: 30000
+      validation-timeout: 3000
+      connection-test-query: select 1
+  data:
+    redis:
+      timeout: 3000
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 10
+          max-idle: 5
+          min-idle: 1
+server:
+  servlet:
+    context-path:
+jimmer:
+  client:
+    uri-prefix: /
+    openapi:
+      path: /openapi.yml
+      ui-path: /openapi.html
+      properties:
+        info:
+          title: "Site Api Document"
+          description: 站点接口文档
+          version: 1.0
+          contact:
+            name: jinty
+            url: http://jinynet.cn
+            email: jinty@jinynet.cn
+        components:
+          securitySchemes:
+            BearerAuth:
+              type: http
+              scheme: bearer
+              bearerFormat: JWT
+              description: "JWT令牌认证，请求头携带Authorization: Bearer <token>"
+        securities:
+          - BearerAuth: []
+
+sa-token:
+  token-name: Authorization
+  token-prefix: 'Bearer'
+  timeout: -1
+  active-timeout: -1
+  is-concurrent: false
+  isReadBody: false
+  isReadCookie: false
+  isReadHeader: true
+  token-style: uuid
+  data-refresh-period: 5
+  is-share: true
+
+dromara:
+  x-file-storage:
+    default-platform: local-1
+    thumbnail-suffix: ".min.jpg"
+
+jetcache:
+  stat:
+    enabled: true
+    log-limit: 100000
+  areaInCacheName: false
+
+lucene:
+  index:
+    path: ./lucene/index
+    article-path: ${lucene.index.path}/article
+    project-path: ${lucene.index.path}/project
+
+jinynet:
+  crypto:
+    sm4:
+      enabled: true
+      key: ${your.sm4.key}

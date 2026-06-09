@@ -1,0 +1,83 @@
+export cn.jinynet.site.entity.Project
+ // -> package cn.jinynet.site.entity.dto
+
+// 列表视图 - 用于项目列表展示
+ProjectList {
+    id
+    name
+    slug
+    description
+    coverImage
+    projectUrl
+    repoUrl
+    status
+    startDate
+    endDate
+    role
+    sortOrder
+    published
+    createdAt
+    stacks {
+        id
+        name
+        color
+    }
+}
+
+// 详情视图 - 用于项目详情展示
+ProjectDetail {
+    id
+    name
+    slug
+    description
+    content
+    coverImage
+    projectUrl
+    repoUrl
+    status
+    startDate
+    endDate
+    role
+    contribution
+    sortOrder
+    published
+    stacks {
+        id
+        name
+        category
+        icon
+        color
+    }
+}
+
+// 表单视图 - 用于创建/编辑项目
+input ProjectForm {
+    id?
+    name
+    slug
+    description
+    content
+    coverImage
+    projectUrl
+    repoUrl
+    status
+    startDate
+    endDate
+    role
+    contribution
+    sortOrder
+    published
+    stacks? {
+        id
+    }
+}
+
+// 列表查询条件 - 用于动态查询
+specification ProjectSpecification {
+    like(name)
+    like(description)
+    eq(published)
+    eq(status)
+    ge(startDate)
+    le(endDate)
+}
