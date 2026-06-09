@@ -42,5 +42,12 @@ dromara:
         auto-create-directory: true
 
 jinynet:
+  cors:
+    enable: true
+  xss:
+    enable: true
   security-headers:
     enable: false
+  crypto:
+    sm4:
+      enabled: true
