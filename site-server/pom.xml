@@ -111,6 +111,10 @@
         </dependency>
         <dependency>
             <groupId>cn.jinynet</groupId>
+            <artifactId>starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.jinynet</groupId>
             <artifactId>starter-file</artifactId>
         </dependency>
         <dependency>

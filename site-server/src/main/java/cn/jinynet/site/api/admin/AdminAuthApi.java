@@ -6,9 +6,13 @@ import cn.jinynet.site.service.AuthService;
 import cn.jinynet.site.service.SettingsService;
 import cn.jinynet.site.types.AdminUser;
 import cn.jinynet.site.types.request.auth.ChangePasswordRequest;
+import cn.jinynet.site.types.request.auth.EmailLoginRequest;
+import cn.jinynet.site.types.request.auth.LoginType;
 import cn.jinynet.site.types.request.auth.PwdLoginRequest;
 import cn.jinynet.starter.common.types.result.Result;
+import cn.jinynet.starter.rbac.types.LoginRequest;
 import cn.jinynet.starter.rbac.types.TokenUser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.babyfish.jimmer.sql.JSqlClient;
@@ -31,7 +35,7 @@ public class AdminAuthApi {
     private final JSqlClient sqlClient;
     private final SettingsService settingsService;
     private final AuthService authService;
-
+    private final ObjectMapper objectMapper;
 
     /**
      * 获取验证码配置
@@ -44,13 +48,28 @@ public class AdminAuthApi {
     }
 
     /**
-     * 用户登录
+     * 用户登录（支持密码登录 / 邮箱验证码登录）
      *
-     * @param loginRequest 登录请求（包含username、password，可选captchaToken）
-     * @return 登录结果
+     * <p>根据请求体中的 {@code loginType} 字段选择登录方式：
+     * <ul>
+     *   <li>{@code PASSWORD}：账号 + 密码（可选滑块验证码）</li>
+     *   <li>{@code EMAIL}：邮箱 + 邮箱验证码（需先通过 {@code /auth/captcha/email} 发送）</li>
+     * </ul>
+     *
+     * @param requestBody 登录请求（JSON，需包含 loginType 字段）
+     * @return 登录结果（accessToken）
      */
     @PostMapping("/login")
-    public Result<String> login(@RequestBody PwdLoginRequest loginRequest) {
+    public Result<String> login(@RequestBody Map<String, Object> requestBody) {
+        String loginType = (String) requestBody.get("loginType");
+        LoginRequest loginRequest;
+
+        if (LoginType.EMAIL.name().equalsIgnoreCase(loginType)) {
+            loginRequest = objectMapper.convertValue(requestBody, EmailLoginRequest.class);
+        } else {
+            loginRequest = objectMapper.convertValue(requestBody, PwdLoginRequest.class);
+        }
+
         TokenUser<AdminUser> tokenUser = authService.login(loginRequest);
         return Result.success("登录成功", tokenUser.getAccessToken());
     }

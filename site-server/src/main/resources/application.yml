@@ -106,3 +106,24 @@ lucene:
     path: ./lucene/index
     article-path: ${lucene.index.path}/article
     project-path: ${lucene.index.path}/project
+
+jinynet:
+  site:
+    url: http://jinynet.cn
+    log-text: JinyNet
+  cors:
+    enable: true
+  xss:
+    enable: true
+  security-headers:
+    enable: false
+  crypto:
+    sm4:
+      enabled: true
+  slider-captcha:
+    enable: true
+    validate: true
+  email-captcha:
+    enable: true
+    validate: true
+    length: 6

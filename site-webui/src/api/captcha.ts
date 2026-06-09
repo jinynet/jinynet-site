@@ -20,3 +20,23 @@ export const verifyCaptcha = (token: string, sliderPosition: number, verifyData?
     params: { token, sliderPosition }
   })
 }
+
+/**
+ * 发送邮箱验证码（需先通过滑块验证）
+ */
+export const sendEmailCaptcha = (email: string, captchaToken: string, captcha: string) => {
+  return axios.post<ApiResult<string>>('/auth/captcha/email', {
+    email,
+    captchaToken,
+    captcha
+  })
+}
+
+/**
+ * 验证邮箱验证码
+ */
+export const verifyEmailCaptcha = (captchaId: string, code: string) => {
+  return axios.post<ApiResult<void>>('/auth/captcha/email/verify', null, {
+    params: { captchaId, code }
+  })
+}

@@ -23,6 +23,6 @@ public class EmailCaptchaGetRequest extends CaptchaValidRequest {
 
     @Override
     public CaptchaValidType captchaValidType() {
-        return CaptchaValidType.IMAGE;
+        return CaptchaValidType.SLIDING;
     }
 }

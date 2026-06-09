@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { login, logout, getProfile } from '@/api/auth'
+import { login, emailLogin, logout, getProfile } from '@/api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
@@ -20,10 +20,16 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token')
   }
 
+  // 密码登录
   const handleLogin = async (username: string, password: string, verifyToken?: string) => {
     const response = await login(username, password, verifyToken)
-    console.log(response)
-    // 后端返回的 data 字段本身就是 token 字符串，不是对象
+    setToken(response.data)
+    return response
+  }
+
+  // 邮箱登录
+  const handleEmailLogin = async (email: string, captchaToken: string, captcha: string) => {
+    const response = await emailLogin(email, captchaToken, captcha)
     setToken(response.data)
     return response
   }
@@ -47,6 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
     setToken,
     removeToken,
     handleLogin,
+    handleEmailLogin,
     handleLogout,
     handleGetProfile
   }

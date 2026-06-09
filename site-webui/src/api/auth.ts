@@ -1,10 +1,25 @@
 import axios from './axios'
 
+// 登录类型
+export type LoginType = 'PASSWORD' | 'EMAIL'
+
+// 密码登录
 export const login = (username: string, password: string, verifyToken?: string) => {
-  return axios.post('/auth/login', { 
-    account: username, 
-    password, 
+  return axios.post('/auth/login', {
+    loginType: 'PASSWORD',
+    account: username,
+    password,
     captchaToken: verifyToken
+  })
+}
+
+// 邮箱登录
+export const emailLogin = (email: string, captchaToken: string, captcha: string) => {
+  return axios.post('/auth/login', {
+    loginType: 'EMAIL',
+    email,
+    captchaToken,
+    captcha
   })
 }
 
@@ -19,9 +34,9 @@ export const getProfile = () => {
 export const changePassword = (username: string, oldPassword: string, newPassword: string, captchaToken?: string) => {
   return axios.post('/auth/change-password', {
     username,
-    oldPassword, 
+    oldPassword,
     newPassword,
-    captchaToken 
+    captchaToken
   })
 }
 

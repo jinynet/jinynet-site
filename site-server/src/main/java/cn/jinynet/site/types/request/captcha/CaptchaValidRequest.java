@@ -23,7 +23,7 @@ public abstract class CaptchaValidRequest {
     /**
      * 验证码
      */
-    @NotEmpty(message = "验证码不能为空")
+//    @NotEmpty(message = "验证码不能为空")
     public String captcha;
 
     /**

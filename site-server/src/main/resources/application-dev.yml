@@ -44,10 +44,28 @@ dromara:
 jinynet:
   cors:
     enable: true
-  xss:
-    enable: true
-  security-headers:
-    enable: false
-  crypto:
-    sm4:
-      enabled: true
+    allowed-origins:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+    allowed-methods:
+      - OPTIONS
+      - GET
+      - POST
+      - PUT
+      - DELETE
+    allowed-headers:
+      - "*"
+    allow-credentials: true
+    max-age: 3600
+  site:
+    url: http://localhost:5173
+  email:
+    env: dev
+    host: ${email.host}
+    username: ${email.username}
+    password: ${email.password}
+    protocol: smtp
+    port: 465
+    ssl: true
+    auth: true
+    debug: false
