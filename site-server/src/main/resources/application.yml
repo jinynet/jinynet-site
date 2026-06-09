@@ -106,9 +106,3 @@ lucene:
     path: ./lucene/index
     article-path: ${lucene.index.path}/article
     project-path: ${lucene.index.path}/project
-
-jinynet:
-  crypto:
-    sm4:
-      enabled: true
-      key: ${your.sm4.key}
