@@ -9,6 +9,7 @@ spring:
       - classpath:preset/application-jinynet.yml
       - classpath:preset/application-log.yml
       - classpath:preset/application-jimmer.yml
+      - classpath:application-local.yml
   servlet:
     multipart:
       enabled: true
@@ -31,6 +32,9 @@ spring:
       cache-null-values: true
   datasource:
     driver-class-name: org.postgresql.Driver
+    url: ${pgsql.url}
+    username: ${pgsql.username}
+    password: ${pgsql.password}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 1
@@ -42,6 +46,10 @@ spring:
       connection-test-query: select 1
   data:
     redis:
+      host: ${redis.host}
+      port: 6379
+      database: 2
+      password: ${redis.password}
       timeout: 3000
       lettuce:
         pool:
@@ -100,6 +108,13 @@ jetcache:
     enabled: true
     log-limit: 100000
   areaInCacheName: false
+  remote:
+    default:
+      type: redis.lettuce
+      uri: ${redis.uri}
+      keyConvertor: fastjson
+      valueEncoder: java
+      valueDecoder: java
 
 lucene:
   index:
@@ -116,7 +131,7 @@ jinynet:
   xss:
     enable: true
   security-headers:
-    enable: false
+    enable: true
   crypto:
     sm4:
       enabled: true
