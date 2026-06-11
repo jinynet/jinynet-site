@@ -44,6 +44,23 @@ spring:
       leak-detection-threshold: 30000
       validation-timeout: 3000
       connection-test-query: select 1
+  flyway:
+    # 启用flyway（默认true）
+    enabled: true
+    # 脚本位置
+    locations: classpath:db/migration
+    # 生产必须关闭！禁止自动删库
+    clean-disabled: true
+    # 允许无序执行？生产必须false
+    out-of-order: false
+    # 项目已有库时使用：基于现有库建立基线
+    baseline-on-migrate: true
+    # 基线版本号
+    baseline-version: 1
+    # 编码
+    encoding: UTF-8
+    # 执行前是否校验脚本
+    validate-on-migrate: true
   data:
     redis:
       host: ${redis.host}
