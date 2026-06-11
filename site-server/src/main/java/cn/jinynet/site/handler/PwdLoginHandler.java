@@ -55,9 +55,14 @@ public class PwdLoginHandler extends LoginHandler<PwdLoginRequest> {
 
     @Override
     protected AdminUser getMatchedUser(PwdLoginRequest loginRequest) {
+        int maxLoginAttempts = 3;
+        String loginAttempts = settingsService.getSettingValue("login_attempts");
+        if (loginAttempts != null) {
+            maxLoginAttempts = Integer.parseInt(loginAttempts);
+        }
         String tip;
         // 密码错误限制验证
-        long leftLimit = passwdErrLimitCache.limitLeftTime(loginRequest.getAccount());
+        long leftLimit = passwdErrLimitCache.limitLeftTime(loginRequest.getAccount(), maxLoginAttempts);
         if (leftLimit > 0) {
             tip = AuthBizCode.PASSWD_ERROR_LIMIT.getMsg() + "（" + timeLimit(leftLimit) + "）";
             throw new AuthBizException(AuthBizCode.PASSWD_ERROR_LIMIT, tip);
@@ -72,9 +77,9 @@ public class PwdLoginHandler extends LoginHandler<PwdLoginRequest> {
 
         // 密码校验
         if (BCryptUtils.isNotMatch(decryptedPassword, adminUser.password())) {
-            int errCount = passwdErrLimitCache.errCount(adminUser.username());
-            if (errCount < PasswdErrLimitCache.MAX_COUNT) {
-                tip = AuthBizCode.PASSWD_ERROR.getMsg() + "，你还剩" + (PasswdErrLimitCache.MAX_COUNT - errCount) + "次机会";
+            int errCount = passwdErrLimitCache.errCount(adminUser.username(), maxLoginAttempts);
+            if (errCount < maxLoginAttempts) {
+                tip = AuthBizCode.PASSWD_ERROR.getMsg() + "，你还剩" + (maxLoginAttempts - errCount) + "次机会";
                 throw new AuthBizException(AuthBizCode.PASSWD_ERROR, tip);
             }
             tip = AuthBizCode.PASSWD_ERROR_LIMIT.getMsg() + "（" + timeLimit(PasswdErrLimitCache.LIMIT_EXPIRE) + "）";

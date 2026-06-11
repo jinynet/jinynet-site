@@ -49,6 +49,7 @@ public class SystemInitializer implements ApplicationRunner {
             log.warn("未检测到管理员账户配置，正在初始化默认管理员账户...");
             settingsService.updateSetting("admin_username", DEFAULT_ADMIN_USERNAME, "security");
             settingsService.updateSetting("admin_password", DEFAULT_ADMIN_PASSWORD, "security");
+            settingsService.updateSetting("login_attempts", "3", "security");
             log.warn("【安全提示】请登录后立即修改默认密码！");
         }
     }

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 密码错误限制缓存
  * <p>
- * 时间间隔 {@link PasswdErrLimitCache#COUNT_INTERVAL} ms内，密码连续错误{@link PasswdErrLimitCache#MAX_COUNT}次，则限制
+ * 时间间隔 {@link PasswdErrLimitCache#COUNT_INTERVAL} ms内，密码连续错误N次，则限制
  * {@link PasswdErrLimitCache#LIMIT_EXPIRE} ms时间内不允许进行再次认证
  *
  * @author jinty
@@ -26,12 +26,6 @@ public class PasswdErrLimitCache {
      * 间隔时间： 10 分钟
      */
     public static final long COUNT_INTERVAL = 1000L * 60 * 10;
-
-    /**
-     * 默认启动限制的密码错误最大次数： 3
-     */
-    public static final int MAX_COUNT = 3;
-
 
     /**
      * 默认限制过期时间(毫秒)： 3分钟
@@ -64,8 +58,8 @@ public class PasswdErrLimitCache {
      * @param account 用户
      * @return true - 存在限制且限制未过期
      */
-    public boolean existsLimit(String account) {
-        return limitLeftTime(account) > 0;
+    public boolean existsLimit(String account, int maxAttempts) {
+        return limitLeftTime(account, maxAttempts) > 0;
     }
 
     /**
@@ -74,12 +68,12 @@ public class PasswdErrLimitCache {
      * @param account 用户
      * @return 剩余时间（毫秒）
      */
-    public long limitLeftTime(String account) {
+    public long limitLeftTime(String account, int maxAttempts) {
         PasswdErrLimit passwdErrLimit = get(account);
         if (passwdErrLimit == null) {
             return -1;
         }
-        if (passwdErrLimit.getCount() < MAX_COUNT) {
+        if (passwdErrLimit.getCount() < maxAttempts) {
             return -1;
         }
         return passwdErrLimit.getExpire() - System.currentTimeMillis();
@@ -96,9 +90,10 @@ public class PasswdErrLimitCache {
 
     /**
      * 密码错误次数加1
+     *
      * @param account 用户
      */
-    public int errCount(String account) {
+    public int errCount(String account, int maxAttempts) {
         // 是否达到最大错误次数
         boolean maxErrCount = false;
         // 获取密码错误限制
@@ -112,7 +107,7 @@ public class PasswdErrLimitCache {
         }
 
         // 是否达到最大错误次数
-        if (passwdErrLimit.getCount() >= MAX_COUNT) {
+        if (passwdErrLimit.getCount() >= maxAttempts) {
             maxErrCount = true;
             passwdErrLimit.setExpire(System.currentTimeMillis() + LIMIT_EXPIRE);
         } else {
