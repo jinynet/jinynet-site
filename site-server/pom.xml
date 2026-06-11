@@ -86,8 +86,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>cn.jinynet</groupId>
+            <artifactId>starter-postgresql</artifactId>
         </dependency>
         <dependency>
             <groupId>cn.jinynet</groupId>

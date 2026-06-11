@@ -316,7 +316,10 @@ const systemMonitor = ref<SystemMonitorData>({
 
 let refreshTimer: number | null = null
 
-const formatNumber = (num: number) => {
+const formatNumber = (num: number | undefined | null) => {
+  if (num === undefined || num === null || isNaN(num)) {
+    return '0'
+  }
   if (num >= 10000) {
     return (num / 10000).toFixed(1) + '万'
   }
