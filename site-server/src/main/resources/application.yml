@@ -105,8 +105,8 @@ jimmer:
 sa-token:
   token-name: Authorization
   token-prefix: 'Bearer'
-  timeout: -1
-  active-timeout: -1
+  timeout: 28800
+  active-timeout: 1800
   is-concurrent: false
   isReadBody: false
   isReadCookie: false

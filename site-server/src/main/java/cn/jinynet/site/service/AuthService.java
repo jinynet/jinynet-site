@@ -1,6 +1,7 @@
 package cn.jinynet.site.service;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.jinynet.site.handler.SliderCaptchaHandler;
 import cn.jinynet.site.types.AdminUser;
 import cn.jinynet.site.types.request.auth.ChangePasswordRequest;
@@ -67,7 +68,12 @@ public class AuthService {
         AuthBizException.throwIf(loginHandler == null, AuthBizCode.NOT_SUPPORT);
         try {
             // 登录
-            return loginHandler.login(loginRequest);
+            String sessionTimeout = settingsService.getSettingValue("session_timeout");
+            SaLoginParameter saLoginParameter = new SaLoginParameter();
+            if (sessionTimeout != null && !sessionTimeout.isEmpty()) {
+                saLoginParameter.setTimeout(Long.parseLong(sessionTimeout) * 60 * 1000);
+            }
+            return loginHandler.login(loginRequest, saLoginParameter);
         } catch (AuthBizException e) {
             log.error("用户登录失败", e);
             throw e;

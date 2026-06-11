@@ -37,7 +37,7 @@ public class AdminSettingsApi {
         for (SystemSettings setting : settingsList) {
             String key = setting.settingKey();
             // 过滤敏感信息：管理员用户名和密码
-            if (!"admin_username".equals(key) && !"admin_password".equals(key) && !"old_password".equals(key)) {
+            if (!"admin_username".equals(key) && !"admin_password".equals(key)) {
                 settingsMap.put(key, setting.settingValue());
             }
         }
