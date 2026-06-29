@@ -277,8 +277,9 @@ const handleEmailCaptchaVerified = async (verifyToken: string) => {
     // verifyToken 是滑块验证通过后的一次性 token
     // 直接使用它发送邮箱验证码
     const response = await sendEmailCaptcha(emailForm.email, verifyToken, '0')
-    if (response.data) {
-      emailCaptchaId.value = response.data
+    const captchaId = (response as any).data as string
+    if (captchaId) {
+      emailCaptchaId.value = captchaId
       message.success('验证码已发送')
       startCountdown()
     }

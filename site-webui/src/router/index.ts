@@ -50,6 +50,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/admin/articles/preview/:id',
+    name: 'AdminArticlePreview',
+    component: () => import('@/views/frontend/ArticleDetail.vue'),
+    meta: { requiresAuth: true, adminPreview: true }
+  },
+  {
     path: '/admin',
     component: () => import('@/components/admin/AdminLayout.vue'),
     meta: { requiresAuth: true },

@@ -1,10 +1,13 @@
 package cn.jinynet.site.config;
 
+import cn.jinynet.starter.web.types.properties.CorsProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 /**
  * Web MVC 配置
@@ -17,6 +20,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    private final CorsProperties corsProperties;
+
+    public WebMvcConfig(CorsProperties corsProperties) {
+        this.corsProperties = corsProperties;
+    }
 
     /**
      * 配置拦截器
@@ -58,11 +67,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        if (!corsProperties.isEnable()) {
+            return;
+        }
+
+        List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
+            return;
+        }
+
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
+                .allowedOriginPatterns(allowedOrigins.toArray(String[]::new))
+                .allowedMethods(corsProperties.getAllowedMethods().toArray(String[]::new))
+                .allowedHeaders(corsProperties.getAllowedHeaders().toArray(String[]::new))
+                .allowCredentials(corsProperties.isAllowCredentials())
+                .maxAge(corsProperties.getMaxAge());
     }
 }

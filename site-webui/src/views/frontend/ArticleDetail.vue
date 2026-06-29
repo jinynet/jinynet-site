@@ -110,6 +110,7 @@ import 'highlight.js/styles/github.css'
 import Header from '@/components/frontend/Header.vue'
 import Footer from '@/components/frontend/Footer.vue'
 import { getPostedArticleById, getPostedArticleBySlug } from '@/api/public'
+import { getArticleById } from '@/api/articles'
 import { useTheme } from '@/composables/useTheme'
 import { useUserStore } from '@/stores/user'
 
@@ -149,6 +150,7 @@ const article = ref<Article | null>(null)
 const renderedContent = ref('')
 const tocItems = ref<TocItem[]>([])
 const activeHeading = ref('')
+const isAdminPreview = computed(() => route.meta.adminPreview === true)
 
 const relatedArticles = computed(() => {
   const allArticles = getAllArticles()
@@ -185,6 +187,7 @@ const extractToc = (content: string) => {
   const headings: TocItem[] = []
   const lines = content.split('\n')
   let inCodeBlock = false
+  const usedIds = new Map<string, number>()
   
   for (const line of lines) {
     // 检测代码块开始或结束（``` 标记）
@@ -203,11 +206,18 @@ const extractToc = (content: string) => {
     if (headingMatch) {
       const level = line.match(/^#{1,6}/)?.[0].length || 1
       const text = headingMatch[1].trim()
-      const id = slugify(text)
+      const id = createUniqueHeadingId(text, usedIds)
       headings.push({ id, text, level })
     }
   }
   tocItems.value = headings
+}
+
+const createUniqueHeadingId = (text: string, usedIds: Map<string, number>): string => {
+  const baseId = slugify(text) || 'heading'
+  const usedCount = usedIds.get(baseId) || 0
+  usedIds.set(baseId, usedCount + 1)
+  return usedCount === 0 ? baseId : `${baseId}-${usedCount + 1}`
 }
 
 const slugify = (text: string): string => {
@@ -223,11 +233,11 @@ const renderMarkdown = () => {
     renderedContent.value = result
     extractToc(article.value.content)
     setTimeout(() => {
-      const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6')
-      headings.forEach((heading) => {
-        const text = heading.textContent || ''
-        const id = slugify(text)
-        heading.id = id
+      const headings = document.querySelectorAll('.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6')
+      headings.forEach((heading, index) => {
+        const tocItem = tocItems.value[index]
+        if (!tocItem) return
+        heading.id = tocItem.id
         ;(heading as HTMLElement).style.scrollMarginTop = '96px'
       })
       // 默认激活第一个目录项
@@ -253,7 +263,7 @@ const handleScroll = () => {
   const documentHeight = document.documentElement.scrollHeight
   
   let currentHeading = ''
-  const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6')
+  const headings = document.querySelectorAll('.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6')
   
   if (headings.length === 0) {
     return
@@ -308,7 +318,11 @@ const handleScroll = () => {
 const fetchArticle = async () => {
   try {
     const id = route.params.id
-    if (id && typeof id === 'string') {
+    if (isAdminPreview.value && id && typeof id === 'string') {
+      const res = await getArticleById(id)
+      article.value = res.data || null
+      renderMarkdown()
+    } else if (id && typeof id === 'string') {
       const res = await getPostedArticleById(id)
       article.value = res.data || null
       renderMarkdown()
@@ -329,7 +343,7 @@ const formatDate = (dateStr: string | null) => {
   return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-watch(() => route.params.id, () => {
+watch(() => [route.params.id, route.params.slug, route.meta.adminPreview], () => {
   fetchArticle()
 }, { immediate: true })
 

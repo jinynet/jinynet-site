@@ -114,13 +114,12 @@ import Vditor from 'vditor'
 import 'vditor/dist/index.css'
 import { useTheme } from '@/composables/useTheme'
 import { getArticleById, createArticle, updateArticle, publishArticle, updateAndPublishArticle, getCategories, getTags, type ArticleForm, type CategoryInput, type TagInput, type ArticleTag } from '@/api/articles'
-import { useAuthStore } from '@/stores/auth'
+import { uploadFile, type FileInfo } from '@/api/files'
 
 const router = useRouter()
 const { isDark } = useTheme()
 const route = useRoute()
 const message = useMessage()
-const authStore = useAuthStore()
 
 let vditorLoadStartTime = 0
 let vditorReadyResolver: (() => void) | null = null
@@ -176,7 +175,7 @@ const debouncedInput = useDebounceFn((value: string) => {
 }, 150)
 
 const handlePreview = () => {
-  router.push(`/articles/${route.params.id}`)
+  router.push(`/admin/articles/preview/${route.params.id}`)
 }
 
 const handleCategoryCreate = (name: string) => {
@@ -210,6 +209,7 @@ const initVditor = () => {
       lang: 'zh_CN',
       theme: isDark.value ? 'dark' : 'light',
       mode: 'wysiwyg',  // 使用所见即所得模式（ir模式存在兼容性问题）
+      customWysiwygToolbar: () => {},
       cache: { 
         enable: true,   // 启用本地缓存，加速刷新后的加载
         type: 'localStorage',
@@ -223,42 +223,37 @@ const initVditor = () => {
         isPreview: false, // 禁用图片预览
       },
       upload: {
-        url: '/files/upload', // 上传接口地址
-        fieldName: 'file', // 上传字段名称
-        accept: 'image/*', // 允许上传文件类型
-        headers: { // 请求头设置
-          'Authorization': `Bearer ${authStore.token}`
+        fieldName: 'file',
+        accept: 'image/*',
+        multiple: false,
+        validate: (files: File[]) => {
+          const file = files[0]
+          if (!file) return '请选择图片'
+          return file.type.startsWith('image/') ? true : '仅支持上传图片'
         },
-        multiple: false, // 仅上传单个文件
-        // 自定义上传处理函数
-        handler: (files: FileList) => {
+        handler: async (files: File[]) => {
           console.log('Vditor upload handler called:', files)
           const file = files[0]
-          if (!file) return
-          
-          const formData = new FormData()
-          formData.append('file', file)
-          
-          fetch('/files/upload', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${authStore.token}`
-            },
-            body: formData
-          }).then(response => response.json())
-          .then(result => {
-            console.log('Upload result:', result)
-            const data = result.data || result.data || result
-            if (data && data.url && vditorInstance) {
-              // 直接插入图片到编辑器
-              vditorInstance.insertValue(`![${data.name || file.name}](${data.url})`)
-            } else {
+          if (!file) return '请选择图片'
+
+          try {
+            const result = await uploadFile(file, undefined, 'article image', true)
+            const data = result.data as FileInfo | undefined
+            console.log('Upload result:', data)
+            if (!data?.url || !vditorInstance) {
               message.error('上传失败，未获取到图片URL')
+              return '上传失败'
             }
-          }).catch(err => {
+
+            const imageName = data.originalFilename || data.filename || file.name
+            vditorInstance.insertValue(`![${imageName}](${data.url})`)
+            message.success('图片上传成功')
+            return null
+          } catch (err) {
             console.error('Upload error:', err)
             message.error('上传失败，请重试')
-          })
+            return '上传失败'
+          }
         },
       },
       // 禁用目录生成
