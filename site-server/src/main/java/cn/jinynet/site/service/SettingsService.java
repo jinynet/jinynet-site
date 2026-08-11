@@ -4,6 +4,7 @@ import cn.jinynet.site.entity.SystemSettings;
 import cn.jinynet.site.entity.SystemSettingsDraft;
 import cn.jinynet.site.entity.SystemSettingsTable;
 import cn.jinynet.site.types.AdminUser;
+import cn.jinynet.site.types.AiConfig;
 import cn.jinynet.starter.crypto.utils.BCryptUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -131,5 +132,30 @@ public class SettingsService {
                 .username(adminUsername)
                 .password(getSettingValue("admin_password"))
                 .build();
+    }
+
+    /**
+     * 获取 AI 配置
+     * <p>
+     * 从系统设置数据库读取 AI 相关配置项，支持运行时动态修改。
+     * </p>
+     *
+     * @return AI 配置对象
+     */
+    public AiConfig getAiConfig() {
+        AiConfig config = new AiConfig();
+        config.setEnabled("true".equals(getSettingValue("ai_enabled")));
+        config.setApiKey(getSettingValue("ai_api_key"));
+        config.setBaseUrl(getSettingValue("ai_base_url"));
+        config.setModel(getSettingValue("ai_model"));
+        String temp = getSettingValue("ai_temperature");
+        if (temp != null && !temp.isEmpty()) {
+            config.setTemperature(Double.parseDouble(temp));
+        }
+        String maxTokens = getSettingValue("ai_max_tokens");
+        if (maxTokens != null && !maxTokens.isEmpty()) {
+            config.setMaxTokens(Integer.parseInt(maxTokens));
+        }
+        return config;
     }
 }

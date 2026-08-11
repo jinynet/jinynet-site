@@ -134,6 +134,11 @@
             <groupId>com.github.oshi</groupId>
             <artifactId>oshi-core</artifactId>
         </dependency>
+        <!-- AI 大模型 SDK -->
+        <dependency>
+            <groupId>cn.jinynet</groupId>
+            <artifactId>jinynet-llm-sdk</artifactId>
+        </dependency>
     </dependencies>
     <!-- 统一插件管理 -->
     <build>

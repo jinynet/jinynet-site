@@ -4,6 +4,12 @@
       <div class="flex items-center justify-between">
         <h1 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">{{ isEdit ? '编辑文章' : '创建文章' }}</h1>
         <div class="flex items-center gap-2">
+          <n-button size="small" sm-size="medium" @click="showAiAssistant = true">
+            <template #icon>
+              <n-icon :component="Robot" />
+            </template>
+            AI 帮写
+          </n-button>
           <n-button size="small" sm-size="medium" @click="handleSaveDraft" :loading="isSavingDraft">
             保存草稿
           </n-button>
@@ -101,13 +107,23 @@
         </n-card>
       </div>
     </div>
+
+    <!-- AI 帮写助手抽屉 -->
+    <AiWritingAssistant
+      v-model:visible="showAiAssistant"
+      :editor-content="vditorInstance?.getValue() || form.content"
+      @insert-content="handleAiInsert"
+      @replace-content="handleAiReplace"
+      @apply-excerpt="handleAiExcerpt"
+      @apply-title="handleAiTitle"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { NCard, NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NSkeleton, NSpin, useMessage } from 'naive-ui'
+import { NCard, NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NSkeleton, NSpin, NIcon, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { useDebounceFn } from '@vueuse/core'
 import Vditor from 'vditor'
@@ -115,6 +131,8 @@ import 'vditor/dist/index.css'
 import { useTheme } from '@/composables/useTheme'
 import { getArticleById, createArticle, updateArticle, publishArticle, updateAndPublishArticle, getCategories, getTags, type ArticleForm, type CategoryInput, type TagInput, type ArticleTag } from '@/api/articles'
 import { uploadFile, type FileInfo } from '@/api/files'
+import { Robot } from '@/icons'
+import AiWritingAssistant from './AiWritingAssistant.vue'
 
 const router = useRouter()
 const { isDark } = useTheme()
@@ -130,6 +148,7 @@ const isSubmitting = ref(false)
 const isSavingDraft = ref(false)
 const isLoading = ref(false)
 const vditorLoadStatus = ref('')
+const showAiAssistant = ref(false)
 let vditorInstance: Vditor | null = null
 let vditorReady = false
 let pendingContent: string | null = null
@@ -503,6 +522,35 @@ const generateSlug = (title: string) => {
     .toLowerCase()
     .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
     .replace(/^-|-$/g, '')
+}
+
+// ==================== AI 帮写处理 ====================
+
+// 插入 AI 生成的内容到编辑器
+const handleAiInsert = (content: string) => {
+  if (vditorInstance) {
+    vditorInstance.insertValue(content)
+  } else {
+    form.value.content += content
+  }
+}
+
+// 替换编辑器全部内容
+const handleAiReplace = (content: string) => {
+  if (vditorInstance) {
+    vditorInstance.setValue(content)
+  }
+  form.value.content = content
+}
+
+// 应用为摘要
+const handleAiExcerpt = (content: string) => {
+  form.value.excerpt = content
+}
+
+// 应用为标题
+const handleAiTitle = (content: string) => {
+  form.value.title = content
 }
 </script>
 

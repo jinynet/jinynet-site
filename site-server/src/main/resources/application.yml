@@ -159,3 +159,11 @@ jinynet:
     enable: true
     validate: true
     length: 6
+
+# AI 大模型配置（后备默认值，实际配置从系统设置数据库读取）
+llm:
+  api-key: ${ai.api-key:}
+  base-url: ${ai.base-url:https://api.deepseek.com}
+  model: ${ai.model:deepseek-chat}
+  temperature: 0.7
+  max-tokens: 2048

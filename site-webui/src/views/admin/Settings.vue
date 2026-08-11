@@ -408,6 +408,43 @@
           </n-form>
         </n-card>
       </n-tab-pane>
+      <n-tab-pane name="ai" tab="AI配置">
+        <n-card title="AI 帮写功能配置">
+          <n-form :model="aiForm" label-placement="top">
+            <n-form-item label="启用 AI 帮写" path="enabled">
+              <n-switch v-model:value="aiForm.enabled" />
+              <span class="ml-2 text-gray-500 text-sm">{{ aiForm.enabled ? '已启用' : '已禁用' }}</span>
+            </n-form-item>
+            <n-form-item label="API Key" path="apiKey">
+              <n-input
+                v-model:value="aiForm.apiKey"
+                type="password"
+                show-password-on="click"
+                placeholder="请输入 LLM API Key"
+              />
+            </n-form-item>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <n-form-item label="API 地址" path="baseUrl">
+                <n-input v-model:value="aiForm.baseUrl" placeholder="https://api.deepseek.com" />
+              </n-form-item>
+              <n-form-item label="模型名称" path="model">
+                <n-input v-model:value="aiForm.model" placeholder="deepseek-chat" />
+              </n-form-item>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <n-form-item label="生成温度 (0-2)" path="temperature">
+                <n-input-number v-model:value="aiForm.temperature" :min="0" :max="2" :step="0.1" style="width: 200px" />
+              </n-form-item>
+              <n-form-item label="最大 Token 数" path="maxTokens">
+                <n-input-number v-model:value="aiForm.maxTokens" :min="256" :max="8192" :step="256" style="width: 200px" />
+              </n-form-item>
+            </div>
+            <n-form-item>
+              <n-button type="primary" @click="saveAiSettings" :loading="aiSaving">保存 AI 配置</n-button>
+            </n-form-item>
+          </n-form>
+        </n-card>
+      </n-tab-pane>
     </n-tabs>
 
     <CaptchaModal
@@ -436,7 +473,7 @@ const message = useMessage()
 
 const { applyTheme, applyPresetTheme, defaultTheme } = useTheme()
 
-const validTabs = ['site', 'seo', 'theme', 'security']
+const validTabs = ['site', 'seo', 'theme', 'security', 'ai']
 const defaultTab = 'site'
 
 const activeTab = ref(
@@ -456,6 +493,7 @@ const siteSaving = ref(false)
 const seoSaving = ref(false)
 const themeSaving = ref(false)
 const securitySaving = ref(false)
+const aiSaving = ref(false)
 const passwordChanging = ref(false)
 const showPasswordCaptchaModal = ref(false)
 const passwordCaptchaToken = ref('')
@@ -557,6 +595,15 @@ const securityForm = ref({
   enableCaptcha: true
 })
 
+const aiForm = ref({
+  enabled: false,
+  apiKey: '',
+  baseUrl: 'https://api.deepseek.com',
+  model: 'deepseek-chat',
+  temperature: 0.7,
+  maxTokens: 2048
+})
+
 const fetchSettings = async () => {
   try {
     const response = await getSettings()
@@ -611,6 +658,13 @@ const fetchSettings = async () => {
       if (data.layout_mode) themeForm.value.layoutMode = data.layout_mode as 'boxed' | 'full-width'
       if (data.animation_enabled !== undefined) themeForm.value.animationEnabled = data.animation_enabled === 'true'
       if (data.border_radius) themeForm.value.borderRadius = data.border_radius as 'sm' | 'md' | 'lg'
+      // AI 配置
+      if (data.ai_enabled !== undefined) aiForm.value.enabled = data.ai_enabled === 'true'
+      if (data.ai_api_key) aiForm.value.apiKey = data.ai_api_key
+      if (data.ai_base_url) aiForm.value.baseUrl = data.ai_base_url
+      if (data.ai_model) aiForm.value.model = data.ai_model
+      if (data.ai_temperature) aiForm.value.temperature = parseFloat(data.ai_temperature)
+      if (data.ai_max_tokens) aiForm.value.maxTokens = parseInt(data.ai_max_tokens)
     }
   } catch (error) {
     console.error('获取设置失败:', error)
@@ -859,6 +913,27 @@ const saveSecuritySettings = async () => {
     message.error('保存失败')
   } finally {
     securitySaving.value = false
+  }
+}
+
+const saveAiSettings = async () => {
+  try {
+    aiSaving.value = true
+    const data: Record<string, any> = {
+      ai_enabled: { value: String(aiForm.value.enabled), category: 'ai' },
+      ai_api_key: { value: aiForm.value.apiKey, category: 'ai' },
+      ai_base_url: { value: aiForm.value.baseUrl, category: 'ai' },
+      ai_model: { value: aiForm.value.model, category: 'ai' },
+      ai_temperature: { value: String(aiForm.value.temperature), category: 'ai' },
+      ai_max_tokens: { value: String(aiForm.value.maxTokens), category: 'ai' }
+    }
+    await updateSettings(data as unknown as SiteSettings)
+    message.success('AI 配置保存成功')
+  } catch (error) {
+    console.error('保存 AI 配置失败:', error)
+    message.error('保存失败')
+  } finally {
+    aiSaving.value = false
   }
 }
 
