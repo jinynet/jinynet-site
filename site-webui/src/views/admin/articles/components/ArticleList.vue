@@ -143,21 +143,13 @@ import { getArticles, deleteArticle as deleteArticleApi, type ArticleList, type 
 import { rebuildArticleIndex } from '@/api/search'
 import { statusOptions, getStatusType, getStatusText } from '../config'
 import { useViewMode } from '@/composables/useViewMode'
+import { formatDateTime } from '@/utils/formatDate'
 
 const router = useRouter()
 const message = useMessage()
 const { viewMode, toggleViewMode } = useViewMode('admin-articles-view')
 
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return '-'
-  const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day} ${hours}:${minutes}`
-}
+const formatDate = (dateString: string | null) => formatDateTime(dateString) || '-'
 
 const keyword = ref('')
 const selectedStatus = ref<string | undefined>(undefined)
@@ -267,8 +259,11 @@ const editArticle = (id: number) => {
   router.push(`/admin/articles/edit/${id}`)
 }
 
+// 管理后台预览：必须走 /admin/articles/preview/:id（meta.adminPreview=true）
+// 复用 ArticleDetail 组件时会命中 getArticleById（/admin/articles/{id}）不走公开接口，
+// 从而允许未发布（DRAFT/SCHEDULED）的文章也能查看。
 const viewArticle = (id: number) => {
-  router.push(`/articles/${id}`)
+  router.push(`/admin/articles/preview/${id}`)
 }
 
 const deleteArticle = (id: number) => {
@@ -338,7 +333,7 @@ const fetchArticles = async () => {
 
   try {
     const response = await getArticles(query)
-    if (response.data && response.data) {
+    if (response.data) {
       articles.value = response.data.content || response.data.rows || []
       const totalPages = response.data.totalPages || response.data.totalPageCount || 0
       const totalRows = Number(response.data.totalRowCount) || 0

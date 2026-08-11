@@ -241,7 +241,7 @@ const fetchProjects = async () => {
 
   try {
     const response = await getProjects(query)
-    if (response.data && response.data) {
+    if (response.data) {
       projects.value = response.data.content || response.data.rows || []
       const totalRows = Number(response.data.totalRowCount) || 0
       pagination.value.itemCount = totalRows > 0 ? totalRows : 0

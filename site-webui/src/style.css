@@ -1,6 +1,7 @@
 @unocss-include
 
 :root {
+  /* ---- 语义色（Naive UI 与 Uno 语义类共享） ---- */
   --primary-color: #27272A;
   --primary-color-hover: #3F3F46;
   --primary-color-pressed: #18181B;
@@ -17,10 +18,33 @@
   --info-color: #3B82F6;
   --info-color-hover: #60A5FA;
   --info-color-pressed: #2563EB;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ---- 字体与排版 ---- */
+  --font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-size: 16px;
-  --border-radius: 8px;
-  --border-radius-small: 4px;
+  --line-height: 1.6;
+  --letter-spacing: 0.01em;
+
+  /* ---- 圆角档位（与 uno shortcuts 一致） ---- */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-pill: 9999px;
+
+  /* ---- 阴影档位 ---- */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 0 rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+
+  /* ---- 过渡与动效（少量、克制） ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+
+  /* ---- 旧变量（向后兼容，新代码不使用） ---- */
+  --border-radius: var(--r-md);
+  --border-radius-small: var(--r-sm);
   --bg-color: #f5f5f5;
   --text-color: #333;
   --bg-color-dark: #1f2937;
@@ -130,10 +154,15 @@ textarea::placeholder {
 body {
   font-family: var(--font-family);
   font-size: var(--font-size);
-  line-height: 1.6;
+  line-height: var(--line-height);
+  letter-spacing: var(--letter-spacing);
   color: var(--text-color);
   background-color: var(--bg-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color var(--dur-slow) var(--ease-out), color var(--dur-slow) var(--ease-out);
+  /* 防止字体切换引起的字宽抖动 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 html.dark body {
@@ -141,48 +170,14 @@ html.dark body {
   background-color: var(--bg-color-dark);
 }
 
-html.dark .text-gray-400 {
-  color: #9ca3af;
-}
-
-html.dark .text-gray-500 {
-  color: #9ca3af;
-}
-
-html.dark .text-gray-600 {
-  color: #c5c9ce;
-}
-
-html.dark .text-gray-700 {
+/* UnoCSS dark: 变体已负责大部分颜色映射，此处仅保留对第三方渲染（markdown-it 产物）兜底 */
+html.dark .prose-gray-400,
+html.dark .prose-gray-500,
+html.dark .prose-gray-600,
+html.dark .prose-gray-700,
+html.dark .prose-gray-800,
+html.dark .prose-gray-900 {
   color: #d1d5db;
-}
-
-html.dark .text-gray-800 {
-  color: #e5e7eb;
-}
-
-html.dark .text-gray-900 {
-  color: #e5e7eb;
-}
-
-html.dark .text-dark {
-  color: #e5e7eb;
-}
-
-html.dark .bg-gray-50 {
-  background-color: #1f2937;
-}
-
-html.dark .bg-gray-100 {
-  background-color: #374151;
-}
-
-html.dark .border-gray-200 {
-  border-color: #4b5563;
-}
-
-html.dark .border-gray-300 {
-  border-color: #4b5563;
 }
 
 a {
@@ -240,16 +235,29 @@ html.dark .layout-boxed #app {
   border-right-color: #374151;
 }
 
+/* ---- 路由过渡动画（与 App.vue fade transition 对应） ---- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ---- 全局克制动效（减少 will-change 滥用，避免性能开销） ---- */
 .animation-enabled * {
   transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out);
+  transition-duration: var(--dur-fast);
 }
-
 .animation-enabled .transition-slow {
-  transition-duration: 300ms;
+  transition-duration: var(--dur-slow);
 }
-
 .animation-enabled .transition-fast {
   transition-duration: 75ms;
 }

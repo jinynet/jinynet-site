@@ -1,34 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from '@/api/axios'
+import type { UserInfo as ApiUserInfo, ProfileInfo, ContactInfo } from '@/types'
 
-export interface UserInfo {
-  id?: number
-  name: string
-  nickname?: string
-  avatar?: string
-  title?: string
-  email?: string
-  phone?: string
-  location?: string
-  summary?: string
-  bio?: string
-  online?: boolean
-}
+/**
+ * 运行时用户信息类型：后端未返回时所有字段都允许缺失
+ */
+export type UserInfo = Partial<ApiUserInfo>
 
-export interface ProfileInfo {
-  name: string
-  title: string
-  bio: string
-  stats: { label: string; value: string }[]
-  introduction: string
-}
-
-export interface ContactInfo {
-  email: string
-  phone: string
-  location: string
-}
+export type { ProfileInfo, ContactInfo }
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref<UserInfo | null>(null)

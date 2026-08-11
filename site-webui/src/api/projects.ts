@@ -1,72 +1,23 @@
 import axios from './axios'
+import type {
+  ProjectListItem,
+  ProjectDetail,
+  ProjectForm,
+  ProjectQuery,
+  ProjectStack,
+} from '@/types'
 
-// 项目列表视图 - 后端 ProjectList DTO
-export interface ProjectList {
-  id: number
-  name: string
-  slug: string
-  description: string | null
-  coverImage: string | null
-  projectUrl: string | null
-  repoUrl: string | null
-  status: 'active' | 'completed' | 'paused'
-  startDate: string | null
-  endDate: string | null
-  role: string | null
-  sortOrder: number
-  published: boolean
-  createdAt: string
+// 类型重新导出（向后兼容），实际定义见 @/types
+export type {
+  ProjectListItem,
+  ProjectDetail,
+  ProjectForm,
+  ProjectQuery,
+  ProjectStack,
 }
 
-// 项目详情视图 - 后端 ProjectDetail DTO
-export interface ProjectDetail extends ProjectList {
-  content: string | null
-  contribution: string | null
-  stacks?: ProjectStack[]
-}
-
-// 项目表单 - 后端 ProjectForm DTO
-export interface ProjectForm {
-  name: string
-  slug: string
-  description: string | null
-  content: string | null
-  coverImage: string | null
-  projectUrl: string | null
-  repoUrl: string | null
-  status: 'active' | 'completed' | 'paused'
-  startDate: string | undefined
-  endDate: string | undefined
-  role: string | null
-  contribution: string | null
-  sortOrder: number
-  published: boolean
-  stacks: { id: number }[]
-}
-
-// 项目查询条件 - 后端 ProjectSpecification DTO
-export interface ProjectQuery {
-  pageIndex: number
-  pageSize: number
-  name?: string        // like 模糊搜索
-  description?: string // like 模糊搜索
-  content?: string     // like 模糊搜索
-  status?: string      // eq 精确匹配
-  startDate?: string   // ge 大于等于
-  endDate?: string     // le 小于等于
-  orderBy?: string
-}
-
-// 项目技术栈
-export interface ProjectStack {
-  id: number
-  name: string
-  category: 'language' | 'framework' | 'database' | 'tools'
-  icon: string | null
-  color: string | null
-  description: string | null
-  sortOrder: number
-}
+/** @deprecated 请使用 ProjectListItem */
+export type ProjectList = ProjectListItem
 
 // 项目管理 API - 完整路径: /api/admin/projects
 export const getProjects = (params: ProjectQuery) => {

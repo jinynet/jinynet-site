@@ -1,18 +1,25 @@
 <template>
-  <div class="min-h-screen" :class="isDark ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="min-h-screen bg-page">
     <Header />
-    
-    <main class="pt-24 pb-16">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="flex flex-col lg:flex-row gap-8">
-          <div class="flex-1">
-            <div class="flex items-center justify-between mb-6">
-              <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">技术文章</h1>
+
+    <main class="pt-24 sm:pt-28 pb-14 sm:pb-16">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-col lg:flex-row gap-6 lg:gap-10">
+          <!-- 主内容：搜索 + 列表 + 分页 -->
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+              <div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-heading mb-1">
+                  技术文章
+                </h1>
+                <p class="text-sm text-muted">共 <span class="tabular-nums text-body">{{ articles.length }}</span> 篇内容</p>
+              </div>
               <div class="flex items-center gap-2">
                 <n-input
                   v-model:value="keyword"
                   placeholder="搜索文章..."
-                  class="w-64"
+                  class="w-full sm:w-64"
+                  clearable
                   @keyup.enter="handleSearch"
                 >
                   <template #prefix>
@@ -21,48 +28,75 @@
                 </n-input>
                 <n-button
                   type="primary"
-                  :style="{ backgroundColor: themeConfig.primaryColor, borderColor: themeConfig.primaryColor }"
+                  :style="{ backgroundColor: primaryColor, borderColor: primaryColor }"
                   @click="handleSearch"
                 >
-                  <Search class="w-5 h-5" />
+                  <template #icon>
+                    <Search class="w-[18px] h-[18px]" />
+                  </template>
+                  <span class="hidden sm:inline">搜索</span>
                 </n-button>
               </div>
             </div>
-            
-            <div class="space-y-6">
-              <div
+
+            <!-- 文章列表（使用 card-elevated 规范） -->
+            <div class="space-y-4 sm:space-y-5">
+              <article
                 v-for="article in articles"
                 :key="article.id"
-                class="p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-                :class="isDark ? 'bg-gray-800' : 'bg-white'"
+                class="card-elevated r-lg p-5 sm:p-6 cursor-pointer"
                 @click="router.push(`/articles/id/${article.id}`)"
               >
-                <div class="flex items-start justify-between mb-3">
-                  <n-tag type="primary" v-if="article.category">{{ article.category.name }}</n-tag>
-                  <span class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-400'">{{ formatDate(article.publishedAt || article.updatedAt) }}</span>
+                <div class="flex items-start justify-between gap-4 mb-3">
+                  <span
+                    v-if="getCategoryName(article)"
+                    class="accent-pill shrink-0"
+                    :style="{
+                      backgroundColor: `${primaryColor}12`,
+                      color: primaryColor
+                    }"
+                  >
+                    {{ getCategoryName(article) }}
+                  </span>
+                  <span class="text-xs sm:text-sm text-faint whitespace-nowrap pt-0.5">
+                    {{ formatDate(article.publishedAt || article.updatedAt) }}
+                  </span>
                 </div>
-                <h2 class="text-xl font-bold mb-2 transition-colors" :class="isDark ? 'text-white hover:text-gray-300' : 'text-gray-900'" :style="{ '--hover-color': primaryColor }">{{ article.title }}</h2>
-                <p class="mb-4 line-clamp-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ article.excerpt }}</p>
-                <div class="flex items-center justify-between">
-                  <div class="flex flex-wrap gap-2" v-if="article.tags">
-                    <n-tag
-                      v-for="tag in article.tags"
+                <h2 class="text-lg sm:text-xl font-semibold tracking-tight text-heading mb-2 line-clamp-2">
+                  {{ article.title }}
+                </h2>
+                <p class="text-sm sm:text-[15px] text-body leading-relaxed line-clamp-2 mb-4 min-h-[2.5rem]">
+                  {{ article.excerpt || '（暂无摘要）点击查看完整内容。' }}
+                </p>
+                <div class="flex items-center justify-between gap-4">
+                  <div class="flex flex-wrap gap-1.5 min-h-[1.5rem]" v-if="getArticleTags(article).length">
+                    <span
+                      v-for="tag in getArticleTags(article).slice(0, 5)"
                       :key="tag.id"
-                      size="small"
-                      :class="isDark ? 'bg-gray-700 text-gray-300' : ''"
+                      class="px-2 py-0.5 text-[11px] sm:text-xs r-sm text-muted bg-subtle"
                     >
-                      {{ tag.name }}
-                    </n-tag>
+                      #{{ tag.name }}
+                    </span>
                   </div>
-                  <div class="flex items-center gap-1 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                    <Eye class="w-4 h-4" />
-                    <span>{{ article.viewCount }}</span>
+                  <div class="flex items-center gap-1 text-xs sm:text-sm text-faint shrink-0 ml-auto">
+                    <Eye class="w-3.5 h-3.5" />
+                    <span class="tabular-nums">{{ article.viewCount }}</span>
                   </div>
                 </div>
+              </article>
+
+              <!-- 空状态 -->
+              <div
+                v-if="articles.length === 0 && !isLoading"
+                class="r-lg bg-card border border-base border-dashed p-12 text-center"
+              >
+                <p class="text-muted mb-1">暂无匹配的文章</p>
+                <p class="text-xs text-faint">试试其他关键词或筛选条件</p>
               </div>
             </div>
 
-            <div class="flex items-center justify-center mt-8">
+            <!-- 分页 -->
+            <div class="flex items-center justify-center mt-8 sm:mt-10">
               <n-pagination
                 v-model:page="currentPage"
                 :page-size="pageSize"
@@ -75,50 +109,69 @@
             </div>
           </div>
 
-          <div class="lg:w-64">
-            <n-card title="文章分类" class="mb-6" :class="isDark ? 'bg-gray-800' : ''">
-              <div class="space-y-2">
-                <div
-                  class="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors"
-                  :class="[
-                    selectedCategoryId === null ? 'font-medium bg-gray-100' : '',
-                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'
-                  ]"
-                  :style="selectedCategoryId === null ? { color: primaryColor } : {}"
+          <!-- 侧边栏：分类 + 标签 -->
+          <aside class="lg:w-64 shrink-0 space-y-4 sm:space-y-5">
+            <NCard title="文章分类" size="small" :bordered="false" class="!r-lg !shadow-card !border !border-base">
+              <div class="space-y-1">
+                <button
+                  type="button"
+                  class="w-full flex items-center justify-between px-3 py-2 r-sm cursor-pointer
+                         transition-colors text-sm text-left
+                         border-none outline-none appearance-none bg-transparent
+                         hover:bg-card-hover"
+                  :class="selectedCategoryId === null
+                    ? 'font-medium bg-card-hover text-heading'
+                    : 'text-body'"
                   @click="filterByCategory(null)"
                 >
                   <span>全部</span>
-                </div>
-                <div
+                </button>
+                <button
                   v-for="category in categories"
                   :key="category.id"
-                  class="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors"
-                  :class="[
-                    selectedCategoryId === category.id ? 'font-medium bg-gray-100' : '',
-                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'
-                  ]"
-                  :style="selectedCategoryId === category.id ? { color: primaryColor } : {}"
+                  type="button"
+                  class="w-full flex items-center justify-between px-3 py-2 r-sm cursor-pointer
+                         transition-colors text-sm text-left
+                         border-none outline-none appearance-none bg-transparent
+                         hover:bg-card-hover"
+                  :class="selectedCategoryId === category.id
+                    ? 'font-medium bg-card-hover text-heading'
+                    : 'text-body'"
                   @click="filterByCategory(category.id)"
                 >
                   <span>{{ category.name }}</span>
-                </div>
+                </button>
               </div>
-            </n-card>
+            </NCard>
 
-            <n-card title="热门标签" v-if="tags.length > 0" :class="isDark ? 'bg-gray-800' : ''">
-              <div class="flex flex-wrap gap-2">
-                <n-tag
+            <NCard
+              v-if="tags.length > 0"
+              title="热门标签"
+              size="small"
+              :bordered="false"
+              class="!r-lg !shadow-card !border !border-base"
+            >
+              <div class="flex flex-wrap gap-1.5">
+                <button
                   v-for="tag in tags"
                   :key="tag.id"
-                  :type="selectedTagId === tag.id ? 'primary' : 'default'"
-                  :class="selectedTagId !== tag.id && isDark ? 'bg-gray-700 text-gray-300' : ''"
+                  type="button"
+                  class="px-2.5 py-1 text-xs r-pill transition-colors
+                         border-none outline-none appearance-none
+                         hover:bg-card-hover"
+                  :class="selectedTagId === tag.id
+                    ? 'text-on-primary'
+                    : 'text-body bg-subtle'"
+                  :style="selectedTagId === tag.id
+                    ? { backgroundColor: primaryColor }
+                    : undefined"
                   @click="filterByTag(tag.id)"
                 >
                   {{ tag.name }}
-                </n-tag>
+                </button>
               </div>
-            </n-card>
-          </div>
+            </NCard>
+          </aside>
         </div>
       </div>
     </main>
@@ -128,41 +181,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Eye } from '@/icons'
-import { NInput, NButton, NTag, NPagination, NCard } from 'naive-ui'
+import { NInput, NButton, NPagination, NCard } from 'naive-ui'
 import Header from '@/components/frontend/Header.vue'
 import Footer from '@/components/frontend/Footer.vue'
 import { getPostedArticles, getPostedArticleCategories, getPostedArticleTags } from '@/api/public'
 import { useTheme } from '@/composables/useTheme'
-import { useUserStore } from '@/stores/user'
+import type { ArticleCardItem } from '@/types'
+import { formatDate } from '@/utils/formatDate'
 
 const router = useRouter()
-const { themeConfig, isDark } = useTheme()
-const userStore = useUserStore()
+const { themeConfig } = useTheme()
 
-const primaryColor = ref('#111827')
-
-onMounted(() => {
-  primaryColor.value = themeConfig.value.primaryColor
-  // 加载用户信息用于 Footer 显示
-  userStore.fetchUserInfo()
-  userStore.fetchUserContacts()
-})
-
-interface Article {
-  id: number | string
-  title: string
-  excerpt: string | null
-  coverImage: string | null
-  viewCount: number
-  likeCount: number
-  publishedAt: string | null
-  updatedAt: string | null
-  category?: { id: number | string; name: string } | null
-  tags?: Array<{ id?: number | string; name: string }>
-}
+const primaryColor = computed(() => themeConfig.value.primaryColor)
+const isLoading = computed(() => false)
 
 interface Category {
   id: number | string
@@ -181,14 +215,19 @@ const totalPages = ref(1)
 const selectedCategoryId = ref<number | null>(null)
 const selectedTagId = ref<number | null>(null)
 
-const articles = ref<Article[]>([])
+const articles = ref<ArticleCardItem[]>([])
 const categories = ref<Category[]>([])
 const tags = ref<Tag[]>([])
 
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })
+/** 将文章 tags（可能是 string[] 或 ArticleTag[]）统一为 { id, name } 格式 */
+const getCategoryName = (article: ArticleCardItem): string | undefined =>
+  article.category?.name ?? article.categoryName
+
+const getArticleTags = (article: ArticleCardItem) => {
+  if (!article.tags) return []
+  return article.tags.map(tag =>
+    typeof tag === 'string' ? { id: tag, name: tag } : tag
+  )
 }
 
 const fetchArticles = async () => {

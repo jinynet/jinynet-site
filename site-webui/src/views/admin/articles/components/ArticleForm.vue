@@ -126,8 +126,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { NCard, NForm, NFormItem, NInput, NSelect, NSwitch, NButton, NSkeleton, NSpin, NIcon, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { useDebounceFn } from '@vueuse/core'
-import Vditor from 'vditor'
-import 'vditor/dist/index.css'
+import type Vditor from 'vditor'
 import { useTheme } from '@/composables/useTheme'
 import { getArticleById, createArticle, updateArticle, publishArticle, updateAndPublishArticle, getCategories, getTags, type ArticleForm, type CategoryInput, type TagInput, type ArticleTag } from '@/api/articles'
 import { uploadFile, type FileInfo } from '@/api/files'
@@ -207,7 +206,7 @@ const handleTagCreate = (name: string) => {
   return option
 }
 
-const initVditor = () => {
+const initVditor = async () => {
   vditorLoadStartTime = performance.now()
   if (!vditorContainer.value || vditorInstance) return
 
@@ -218,8 +217,14 @@ const initVditor = () => {
   }
 
   container.style.minHeight = '500px'
+  vditorLoadStatus.value = '加载编辑器...'
 
   try {
+    // 动态加载 Vditor 及其样式，避免进入页面时阻塞渲染
+    const [{ default: Vditor }] = await Promise.all([
+      import('vditor'),
+      import('vditor/dist/index.css'),
+    ])
     vditorLoadStatus.value = '加载中...'
     
     // 使用类型断言避免TS报错
@@ -251,14 +256,12 @@ const initVditor = () => {
           return file.type.startsWith('image/') ? true : '仅支持上传图片'
         },
         handler: async (files: File[]) => {
-          console.log('Vditor upload handler called:', files)
           const file = files[0]
           if (!file) return '请选择图片'
 
           try {
             const result = await uploadFile(file, undefined, 'article image', true)
             const data = result.data as FileInfo | undefined
-            console.log('Upload result:', data)
             if (!data?.url || !vditorInstance) {
               message.error('上传失败，未获取到图片URL')
               return '上传失败'
@@ -282,10 +285,9 @@ const initVditor = () => {
       },
       after: () => {
         const loadTime = performance.now() - vditorLoadStartTime
-        const displayTime = loadTime >= 1000 
-          ? `${(loadTime / 1000).toFixed(1)}s` 
+        const displayTime = loadTime >= 1000
+          ? `${(loadTime / 1000).toFixed(1)}s`
           : `${Math.round(loadTime)}ms`
-        console.log(`✅ Vditor 编辑器完全准备好，总耗时 ${loadTime.toFixed(2)}ms`)
         vditorLoadStatus.value = `就绪 (${displayTime})`
         vditorReady = true
         if (vditorReadyResolver) {
@@ -293,7 +295,6 @@ const initVditor = () => {
           vditorReadyResolver = null
         }
         if (pendingContent && vditorInstance) {
-          console.log('📝 设置缓存的编辑器内容')
           try {
             vditorInstance.setValue(pendingContent)
             pendingContent = null
@@ -306,9 +307,7 @@ const initVditor = () => {
         debouncedInput(value)
       }
     }
-    console.log('⏳ 创建Vditor实例...')
     vditorInstance = new Vditor(container, vditorConfig)
-    console.log('⏳ Vditor实例已创建，等待完全初始化...')
     vditorLoadStatus.value = '初始化中...'
   } catch (e) {
     console.error('Vditor initialization error:', e)
@@ -345,23 +344,15 @@ const loadArticle = async (id: string) => {
       form.value.isPublished = data.status === 'published'
       form.value.category = data.category?.slug || null
       form.value.tags = data.tags?.map((tag: ArticleTag) => tag.slug) || []
-      
-      // 记录内容大小，用于性能分析
-      const contentSize = new Blob([form.value.content || '']).size
-      console.log(`📄 文章内容大小: ${(contentSize / 1024).toFixed(2)} KB`)
-      
+
       // 根据编辑器状态设置内容
       if (vditorReady && vditorInstance && form.value.content) {
-        console.log('📝 编辑器已准备好，直接设置内容')
-        const setStartTime = performance.now()
         try {
           vditorInstance.setValue(form.value.content)
-          console.log(`✅ 内容设置完成，耗时 ${(performance.now() - setStartTime).toFixed(2)}ms`)
         } catch (e) {
           console.warn('Vditor setValue error:', e)
         }
       } else if (form.value.content) {
-        console.log('⏳ 编辑器未准备好，缓存内容等待设置')
         pendingContent = form.value.content
       }
     }

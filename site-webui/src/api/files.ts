@@ -176,7 +176,6 @@ class LargeFileUploader {
 
   async init() {
     const r: any = await initLargeFileUpload(this.file.name, this.file.size, this.chunkSize, this.fileMd5)
-    console.log('初始化上传响应:', JSON.stringify(r))
     const d = (r && r.data && r.data.uploadId) ? r.data : (r && r.uploadId) ? r : null
     if (d && d.uploadId) {
       this.uploadId = d.uploadId; this.totalChunks = Number(d.totalChunks) || 0
@@ -186,7 +185,7 @@ class LargeFileUploader {
       }
       return this.uploadId
     }
-    console.error('初始化上传失败表单持久化，原始响应:', r, '解析后data:', (r && r.data), 'uploadId:', (r && r.data && r.data.uploadId))
+    console.error('初始化上传失败:', r)
     throw new Error('初始化失败: ' + ((r && r.data && r.data.msg) || (r && r.msg) || JSON.stringify(r || {})))
   }
 

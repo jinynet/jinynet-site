@@ -3,3 +3,5 @@
 packages:
   - 'packages/*'
   - 'site-webui'
+allowBuilds:
+  esbuild: true

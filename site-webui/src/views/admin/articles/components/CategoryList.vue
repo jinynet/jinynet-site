@@ -6,7 +6,7 @@
           <Plus class="w-4 h-4 mr-2" />
           添加分类
         </n-button>
-        <n-button @click="fetchCategories" circle size="small" title="刷新">
+        <n-button @click="fetchList" circle size="small" title="刷新">
           <Refresh class="w-4 h-4" />
         </n-button>
       </div>
@@ -21,7 +21,7 @@
         :columns="categoryColumns"
         :data="categories"
         :bordered="true"
-        :loading="categoryLoading"
+        :loading="loading"
         :scroll-x="600"
       >
         <template #empty>
@@ -37,7 +37,7 @@
     </n-card>
 
     <n-card class="table-card" v-if="viewMode === 'card'">
-      <n-spin :show="categoryLoading">
+      <n-spin :show="loading">
         <div v-if="categories.length === 0" class="flex flex-col items-center justify-center py-12">
           <p class="text-gray-400">暂无分类数据</p>
           <n-button type="primary" size="small" @click="openCategoryModal" class="mt-4">
@@ -59,8 +59,8 @@
               <span>排序: {{ category.sortOrder }}</span>
             </div>
             <div class="flex justify-end gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-              <n-button text size="small" @click.stop="editCategory(category)"><Edit class="w-4 h-4" /></n-button>
-              <n-button text size="small" type="error" @click.stop="deleteCategoryItem(category)"><Trash2 class="w-4 h-4" /></n-button>
+              <n-button text size="small" @click.stop="openEdit(category)"><Edit class="w-4 h-4" /></n-button>
+              <n-button text size="small" type="error" @click.stop="remove(category)"><Trash2 class="w-4 h-4" /></n-button>
             </div>
           </n-card>
         </div>
@@ -68,7 +68,7 @@
     </n-card>
 
     <n-modal
-      v-model:show="showCategoryModal"
+      v-model:show="showModal"
       preset="card"
       :title="editingCategory ? '编辑分类' : '添加分类'"
       :style="{ width: '500px' }"
@@ -89,23 +89,23 @@
       </n-form>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="showCategoryModal = false">取消</n-button>
+          <n-button @click="showModal = false">取消</n-button>
           <n-button type="primary" @click="saveCategory">保存</n-button>
         </n-space>
       </template>
     </n-modal>
 
     <n-modal
-      v-model:show="deleteCategoryModal"
+      v-model:show="deleteModal"
       preset="card"
       title="确认删除"
       :style="{ width: '400px' }"
     >
-      <p>确定要删除分类「{{ deletingCategoryName }}」吗？</p>
+      <p>确定要删除分类「{{ deletingItemName() }}」吗？</p>
       <template #footer>
         <n-space justify="end">
-          <n-button @click="deleteCategoryModal = false">取消</n-button>
-          <n-button type="error" @click="confirmDeleteCategory">确定删除</n-button>
+          <n-button @click="deleteModal = false">取消</n-button>
+          <n-button type="error" @click="confirmDelete">确定删除</n-button>
         </n-space>
       </template>
     </n-modal>
@@ -113,28 +113,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, h } from 'vue'
+import { ref, onMounted, h, watch } from 'vue'
 import { Plus, Refresh, Grid, Menu, Edit, Trash2 } from '@/icons'
 import { NButton, NCard, NDataTable, NModal, NSpace, NForm, NFormItem, NInput, NInputNumber, NSpin, useMessage } from 'naive-ui'
-import { getCategories, createCategory, updateCategory, deleteCategory, type ArticleCategory } from '@/api/articles'
+import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/articles'
+import type { ArticleCategory } from '@/types'
 import { useViewMode } from '@/composables/useViewMode'
+import { useCrudList } from '@/composables/useCrudList'
 
 const message = useMessage()
 const { viewMode, toggleViewMode } = useViewMode('admin-article-categories-view')
 
-const categories = ref<ArticleCategory[]>([])
-const categoryLoading = ref(false)
-const showCategoryModal = ref(false)
-const editingCategory = ref<ArticleCategory | null>(null)
-const deleteCategoryModal = ref(false)
-const deletingCategoryId = ref<number | null>(null)
-const deletingCategoryName = ref('')
+/** 创建分类时的表单数据类型（name 必填，其余可选） */
+type CategoryCreateData = { name: string; slug?: string; description?: string; sortOrder?: number }
 
 const categoryForm = ref({
   name: '',
   slug: '',
   description: '',
   sortOrder: 0
+})
+
+const {
+  items: categories,
+  loading,
+  showModal,
+  editingItem: editingCategory,
+  deleteModal,
+  fetchList,
+  openCreate,
+  openEdit,
+  save,
+  remove,
+  confirmDelete,
+  deletingItemName,
+} = useCrudList<ArticleCategory, CategoryCreateData>({
+  listFn: getCategories,
+  createFn: createCategory,
+  updateFn: (id, data) => updateCategory(id as number, data),
+  deleteFn: (id) => deleteCategory(id as number),
+  getName: (c) => c.name,
+  itemName: '分类',
+  message,
 })
 
 const categoryColumns = [
@@ -149,43 +169,33 @@ const categoryColumns = [
     fixed: 'right' as 'right',
     render: (row: ArticleCategory) => {
       return h('div', { class: 'flex gap-1' }, [
-        h(NButton, { text: true, size: 'tiny' as const, onClick: () => editCategory(row) }, () => '编辑'),
-        h(NButton, { text: true, size: 'tiny' as const, status: 'error' as const, onClick: () => deleteCategoryItem(row) }, () => '删除')
+        h(NButton, { text: true, size: 'tiny' as const, onClick: () => openEdit(row) }, () => '编辑'),
+        h(NButton, { text: true, size: 'tiny' as const, status: 'error' as const, onClick: () => remove(row) }, () => '删除')
       ])
     }
   }
 ]
 
+/**
+ * useCrudList 的 openEdit / openCreate 只管理 editingItem / showModal，
+ * 表单数据（name/slug/description/sortOrder）由调用方维护，
+ * 因此通过 watch editingCategory 在新建/编辑切换时同步表单值。
+ */
+watch(editingCategory, (val, _oldVal) => {
+  if (val) {
+    categoryForm.value = {
+      name: val.name,
+      slug: val.slug,
+      description: val.description ?? '',
+      sortOrder: val.sortOrder ?? 0
+    }
+  } else {
+    categoryForm.value = { name: '', slug: '', description: '', sortOrder: 0 }
+  }
+})
+
 const openCategoryModal = () => {
-  editingCategory.value = null
-  categoryForm.value = { name: '', slug: '', description: '', sortOrder: 0 }
-  showCategoryModal.value = true
-}
-
-const editCategory = (category: ArticleCategory) => {
-  editingCategory.value = category
-  categoryForm.value = {
-    name: category.name,
-    slug: category.slug,
-    description: category.description || '',
-    sortOrder: category.sortOrder
-  }
-  showCategoryModal.value = true
-}
-
-const deleteCategoryItem = (category: ArticleCategory) => {
-  deletingCategoryId.value = category.id
-  deletingCategoryName.value = category.name
-  deleteCategoryModal.value = true
-}
-
-const confirmDeleteCategory = async () => {
-  if (deletingCategoryId.value) {
-    await deleteCategory(deletingCategoryId.value)
-    categories.value = categories.value.filter(c => c.id !== deletingCategoryId.value)
-    message.success('删除成功')
-  }
-  deleteCategoryModal.value = false
+  openCreate()
 }
 
 const saveCategory = async () => {
@@ -193,43 +203,22 @@ const saveCategory = async () => {
     message.error('请输入分类名称')
     return
   }
-
-  try {
-    if (editingCategory.value) {
-      await updateCategory(editingCategory.value.id, categoryForm.value)
-      const index = categories.value.findIndex(c => c.id === editingCategory.value!.id)
-      if (index !== -1) {
-        categories.value[index] = { ...categories.value[index], ...categoryForm.value }
-      }
-      message.success('更新成功')
-    } else {
-      const response = await createCategory(categoryForm.value)
-      categories.value.push(response.data)
-      message.success('创建成功')
-    }
-    showCategoryModal.value = false
+  const ok = await save(categoryForm.value, () => {
+    showModal.value = false
     categoryForm.value = { name: '', slug: '', description: '', sortOrder: 0 }
-  } catch (error) {
-    console.error('保存分类失败:', error)
-    message.error('保存失败')
-  }
-}
-
-const fetchCategories = async () => {
-  categoryLoading.value = true
-  try {
-    const response = await getCategories()
-    if (response.data) {
-      categories.value = response.data
+  })
+  if (!ok && editingCategory.value) {
+    // 编辑失败时同步本地表单（保持原逻辑）
+    categoryForm.value = {
+      name: editingCategory.value.name,
+      slug: editingCategory.value.slug,
+      description: editingCategory.value.description || '',
+      sortOrder: editingCategory.value.sortOrder
     }
-  } catch (error) {
-    console.error('获取分类失败:', error)
-  } finally {
-    categoryLoading.value = false
   }
 }
 
 onMounted(() => {
-  fetchCategories()
+  fetchList()
 })
 </script>

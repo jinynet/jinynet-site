@@ -1,78 +1,78 @@
 <template>
-  <div 
-    class="rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-6 cursor-pointer group" 
-    :class="isDark ? 'bg-gray-800' : 'bg-white'"
-    @click="handleClick"
-  >
-    <div class="flex items-start justify-between mb-4">
-      <span 
-        v-if="article.category" 
-        class="px-3 py-1 text-sm rounded-full" 
-        :style="{ backgroundColor: `${themeConfig.primaryColor}10`, color: themeConfig.primaryColor }"
+  <article class="card-elevated r-lg p-6 group" @click="handleClick">
+    <!-- 顶部：分类 + 时间 -->
+    <div class="flex items-start justify-between gap-4 mb-4">
+      <span
+        v-if="article.category"
+        class="accent-pill shrink-0"
+        :style="{
+          backgroundColor: `${themeConfig.primaryColor}12`,
+          color: themeConfig.primaryColor
+        }"
       >
         {{ article.category.name }}
       </span>
-      <span class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-400'">{{ formatDate(article.publishedAt) }}</span>
+      <span class="text-xs sm:text-sm text-faint whitespace-nowrap pt-0.5">
+        {{ formatDate(article.publishedAt) }}
+      </span>
     </div>
-    <h3 
-      class="text-xl font-bold mb-2 group-hover:transition-colors" 
-      :class="isDark ? 'text-white' : 'text-gray-800'"
+
+    <!-- 标题 -->
+    <h3
+      class="text-lg sm:text-xl font-semibold tracking-tight text-heading mb-2
+             group-hover:text-heading transition-colors line-clamp-2"
     >
       {{ article.title }}
     </h3>
-    <p class="text-sm mb-4 line-clamp-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ article.excerpt }}</p>
-    <div class="flex items-center justify-between">
-      <div class="flex flex-wrap gap-2" v-if="article.tags">
+
+    <!-- 摘要 -->
+    <p class="text-sm text-body leading-relaxed line-clamp-2 mb-5 min-h-[2.5rem]">
+      {{ article.excerpt }}
+    </p>
+
+    <!-- 底部：标签 + 阅读量 -->
+    <div class="flex items-end justify-between gap-4">
+      <div class="flex flex-wrap gap-1.5 min-h-[1.5rem]" v-if="displayTags.length">
         <span
-          v-for="tag in article.tags.slice(0, 3)"
+          v-for="tag in displayTags.slice(0, 3)"
           :key="tag.id"
-          class="px-2 py-1 text-xs rounded"
-          :class="isDark ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'"
+          class="px-2 py-0.5 text-[11px] sm:text-xs r-sm text-muted bg-subtle"
         >
-          {{ tag.name }}
+          #{{ tag.name }}
         </span>
       </div>
-      <div class="flex items-center gap-1 text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
-        <Eye class="w-4 h-4" />
-        <span>{{ article.viewCount }}</span>
+      <div class="flex items-center gap-1 text-xs sm:text-sm text-faint shrink-0">
+        <Eye class="w-3.5 h-3.5" />
+        <span class="tabular-nums">{{ article.viewCount }}</span>
       </div>
     </div>
-  </div>
+  </article>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Eye } from '@/icons'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
+import type { ArticleCardItem } from '@/types'
+import { formatDate } from '@/utils/formatDate'
 
 const router = useRouter()
-const { themeConfig, isDark } = useTheme()
-
-interface Article {
-  id: number | string
-  title: string
-  excerpt: string | null
-  publishedAt: string | null
-  viewCount: number
-  category?: { name: string } | null
-  tags?: Array<{ id?: number | string; name: string }>
-}
+const { themeConfig, isDark: _unused_isDark } = useTheme()
 
 const props = defineProps<{
-  article: Article
+  article: ArticleCardItem
 }>()
+
+/** 将 tags（可能是 string[] 或 ArticleTag[]）统一为 { id, name } 格式 */
+const displayTags = computed(() => {
+  if (!props.article.tags) return []
+  return props.article.tags.map(tag =>
+    typeof tag === 'string' ? { id: tag, name: tag } : tag
+  )
+})
 
 const handleClick = () => {
   router.push(`/articles/${props.article.id}`)
-}
-
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  })
 }
 </script>

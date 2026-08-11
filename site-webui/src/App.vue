@@ -3,9 +3,11 @@
     <n-message-provider>
       <n-dialog-provider>
         <router-view v-slot="{ Component }">
-          <keep-alive :include="['Search']">
-            <component :is="Component" />
-          </keep-alive>
+          <transition name="fade" mode="out-in">
+            <keep-alive :include="['Search']">
+              <component :is="Component" />
+            </keep-alive>
+          </transition>
         </router-view>
       </n-dialog-provider>
     </n-message-provider>
@@ -13,8 +15,7 @@
       <button
         v-if="showBackToTop"
         @click="scrollToTop"
-        class="fixed bottom-6 right-6 w-12 h-12 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-700 transition-colors z-50"
-        :class="{ 'dark:bg-gray-700 dark:hover:bg-gray-600': isDark }"
+        class="fixed bottom-6 right-6 w-12 h-12 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-700 transition-colors z-50 dark:bg-gray-700 dark:hover:bg-gray-600"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -32,47 +33,28 @@ import zhCN from 'naive-ui/es/locales/common/zhCN'
 import { useAppStore } from '@/stores/app'
 import { getPublicSettings } from '@/api/settings'
 import { useTheme } from '@/composables/useTheme'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const appStore = useAppStore()
+const userStore = useUserStore()
 const showBackToTop = ref(false)
-const { currentTheme, themeOverrides, initTheme, isDark, loadThemeConfig } = useTheme()
+const { currentTheme, themeOverrides, initTheme, loadThemeConfig } = useTheme()
 let scrollTimer: number | null = null
 let cleanupThemeListener: (() => void) | null = null
 
-const routeTitles: Record<string, string> = {
-  '/': '首页',
-  '/articles': '文章列表',
-  '/about': '关于我',
-  '/admin': '管理后台',
-  '/admin/login': '登录',
-  '/admin/articles': '文章管理',
-  '/admin/articles/add': '添加文章',
-  '/admin/categories': '分类管理',
-  '/admin/tags': '标签管理',
-  '/admin/projects': '项目管理',
-  '/admin/projects/add': '添加项目',
-  '/admin/profile': '个人信息',
-  '/admin/settings': '系统设置'
-}
-
 const siteTitle = computed(() => appStore.siteConfig.title || '个人技术平台')
 
+// 通过路由 meta.title 设置页面标题（已无 routeTitles 字典）
 const updatePageTitle = () => {
-  const path = route.path
-  let title = routeTitles[path]
-  if (!title) {
-    if (path.startsWith('/articles/')) title = '文章详情'
-    else if (path.startsWith('/admin/articles/edit/')) title = '编辑文章'
-    else if (path.startsWith('/admin/projects/edit/')) title = '编辑项目'
-    else title = siteTitle.value
-  }
+  const title = (route.meta.title as string | undefined) || siteTitle.value
   document.title = `${title} - ${siteTitle.value}`
 }
 
 watch(() => route.path, updatePageTitle, { immediate: true })
 watch(siteTitle, updatePageTitle)
 
+// 页面刷新时的滚动位置恢复（SPA 内部跳转由 router.scrollBehavior 处理）
 const SCROLL_KEY_PREFIX = 'scroll_pos_'
 
 const getScrollKey = (path: string) => `${SCROLL_KEY_PREFIX}${path}`
@@ -121,9 +103,20 @@ const loadPublicSettings = async () => {
   }
 }
 
+// 前端页面共享的用户信息加载（store 内部有 hasLoaded 缓存，不会重复请求）
+const loadUserInfo = async () => {
+  // 仅在前端页面（非 /admin）加载
+  if (route.path.startsWith('/admin')) return
+  await Promise.all([
+    userStore.fetchUserInfo(),
+    userStore.fetchUserContacts()
+  ])
+}
+
 onMounted(() => {
   cleanupThemeListener = initTheme()
   loadPublicSettings()
+  loadUserInfo()
   window.addEventListener('scroll', handleScroll, { passive: true })
   window.addEventListener('beforeunload', () => {
     saveScrollPosition(route.fullPath)

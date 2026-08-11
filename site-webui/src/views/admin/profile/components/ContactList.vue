@@ -176,7 +176,7 @@ const openContactModal = () => {
 const editContact = (contact: UserContact) => {
   editingContact.value = contact
   contactForm.value = {
-    contactType: contact.contactType,
+    contactType: contact.contactType as 'email' | 'phone' | 'github' | 'linkedin' | 'wechat' | 'website' | 'other',
     contactValue: contact.contactValue,
     displayName: contact.displayName || '',
     icon: contact.icon || '',

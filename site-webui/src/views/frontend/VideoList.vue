@@ -140,7 +140,6 @@ const fetchVideos = async () => {
     const response = await getPublicVideos(params)
     const data = response.data
     videos.value = data?.rows || []
-    console.log('Video API response:', data)
     if (data?.totalPageCount !== undefined) {
       totalPages.value = parseInt(data.totalPageCount.toString())
     } else if (data?.totalPages !== undefined) {

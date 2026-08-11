@@ -8,6 +8,7 @@ import type { VideoDetail, VideoList } from '@/api/videos'
 import { getPublicVideoById, getHotVideos } from '@/api/videos'
 import { useTheme } from '@/composables/useTheme'
 import { useUserStore } from '@/stores/user'
+import { formatDateLong } from '@/utils/formatDate'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -19,14 +20,7 @@ const loading = ref(true)
 const likes = ref(0)
 const isLiked = ref(false)
 
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+const formatDate = (dateStr: string | null) => formatDateLong(dateStr) || '-'
 
 const formatViewCount = (count: number) => {
   if (count >= 10000) {

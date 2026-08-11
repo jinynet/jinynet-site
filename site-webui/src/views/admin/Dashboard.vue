@@ -332,21 +332,21 @@ const getRankClass = (index: number) => {
 }
 
 const getCpuColor = (percent: number) => {
-  if (percent >= 80) return '#f0a020'
   if (percent >= 90) return '#e53935'
+  if (percent >= 80) return '#f0a020'
   return '#18a058'
 }
 
 const getMemoryColor = (percent: number) => {
-  if (percent >= 80) return '#f0a020'
   if (percent >= 90) return '#e53935'
+  if (percent >= 80) return '#f0a020'
   return '#2080f0'
 }
 
 const getDiskColor = (percent: number) => {
-  if (percent >= 80) return '#f0a020'
   if (percent >= 90) return '#e53935'
-  return '#f0a020'
+  if (percent >= 80) return '#f0a020'
+  return '#18a058'
 }
 
 const editArticle = (id: number) => {

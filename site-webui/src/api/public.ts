@@ -1,82 +1,29 @@
 import axios from './axios'
+import type {
+  PostedArticleListItem,
+  PostedArticleDetail,
+  PostedProjectListItem,
+  UserInfoPublic,
+  UserSkillPublic,
+  UserContactPublic,
+  PostedArticleQuery,
+} from '@/types'
 
-// 首页文章列表视图 - 后端 ArticleList DTO（已发布）
-export interface PostedArticleList {
-  id: number
-  title: string
-  slug: string
-  excerpt: string | null
-  coverImage: string | null
-  status: 'draft' | 'published' | 'private'
-  viewCount: number
-  likeCount: number
-  publishedAt: string | null
-  updatedAt: string
-  categoryName?: string
-  tags?: string[]
+// 类型重新导出（向后兼容），实际定义见 @/types
+export type {
+  PostedArticleListItem,
+  PostedArticleDetail,
+  PostedProjectListItem,
+  UserInfoPublic,
+  UserSkillPublic,
+  UserContactPublic,
+  PostedArticleQuery,
 }
 
-// 首页文章详情视图 - 后端 ArticleDetail DTO
-export interface PostedArticleDetail extends PostedArticleList {
-  content: string
-}
-
-// 首页项目列表视图
-export interface PostedProjectList {
-  id: number
-  name: string
-  slug: string
-  description: string | null
-  coverImage: string | null
-  projectUrl: string | null
-  repoUrl: string | null
-  status: 'active' | 'completed' | 'paused'
-  startDate: string | null
-  endDate: string | null
-  role: string | null
-  sortOrder: number
-  createdAt: string
-  techStacks?: string[]
-}
-
-// 首页用户信息视图
-export interface UserInfoPublic {
-  id: number
-  name: string
-  nickname: string | null
-  avatar: string | null
-  title: string | null
-  email: string | null
-  location: string | null
-  summary: string | null
-  bio: string | null
-}
-
-// 首页技能视图
-export interface UserSkillPublic {
-  id: number
-  name: string
-  category: string
-  level: number
-}
-
-// 首页用户联系方式视图
-export interface UserContactPublic {
-  id: number
-  contactType: string
-  contactValue: string
-  displayName: string | null
-  icon: string | null
-}
-
-// 文章查询参数
-export interface PostedArticleQuery {
-  pageIndex: number
-  pageSize: number
-  title?: string
-  categoryId?: number
-  tagId?: number
-}
+/** @deprecated 请使用 PostedArticleListItem */
+export type PostedArticleList = PostedArticleListItem
+/** @deprecated 请使用 PostedProjectListItem */
+export type PostedProjectList = PostedProjectListItem
 
 // 已发布文章 API - 完整路径: /api/articles
 export const getPostedArticles = (params: PostedArticleQuery) => {

@@ -9,7 +9,7 @@
             <n-card class="mb-6" :class="isDark ? 'bg-gray-800' : ''">
               <div class="flex items-start justify-between mb-4">
                 <n-tag type="primary" v-if="article.category">{{ article.category.name }}</n-tag>
-                <span class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-400'">{{ formatDate(article.publishedAt) }}</span>
+                <span class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-400'">{{ formatDateLong(article.publishedAt) }}</span>
               </div>
               <h1 class="text-3xl font-bold mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">{{ article.title }}</h1>
               <div class="flex items-center gap-4 text-sm mb-6" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
@@ -64,25 +64,8 @@
             </n-card>
           </div>
         </div>
-
-        <n-card title="相关推荐" class="mb-6" v-if="relatedArticles.length > 0" :class="isDark ? 'bg-gray-800' : ''">
-          <div class="space-y-3">
-            <div
-              v-for="related in relatedArticles"
-              :key="related.id"
-              class="flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors"
-              :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'"
-              @click="router.push(`/articles/${related.id}`)"
-            >
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center" :style="{ backgroundColor: primaryColor + '20' }">
-                <FileText class="w-4 h-4" :style="{ color: primaryColor }" />
-              </div>
-              <span :class="isDark ? 'text-gray-300' : 'text-gray-600'">{{ related.title }}</span>
-            </div>
-          </div>
-        </n-card>
       </div>
-      
+
       <!-- 文章不存在或未发布时显示 -->
       <div class="max-w-6xl mx-auto px-4" v-else>
         <n-card class="text-center py-16">
@@ -101,7 +84,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Eye, Heart, FileText } from '@/icons'
+import { Eye, Heart } from '@/icons'
 import { NCard, NTag, NButton } from 'naive-ui'
 import MarkdownIt from 'markdown-it'
 import markdownItAnchor from 'markdown-it-anchor'
@@ -112,33 +95,16 @@ import Footer from '@/components/frontend/Footer.vue'
 import { getPostedArticleById, getPostedArticleBySlug } from '@/api/public'
 import { getArticleById } from '@/api/articles'
 import { useTheme } from '@/composables/useTheme'
-import { useUserStore } from '@/stores/user'
+import type { ArticleDetail } from '@/types'
+import { formatDateLong } from '@/utils/formatDate'
 
 const router = useRouter()
 const route = useRoute()
 const { themeConfig, isDark } = useTheme()
-const userStore = useUserStore()
 
-const primaryColor = ref('#111827')
+const primaryColor = computed(() => themeConfig.value.primaryColor)
 
-onMounted(() => {
-  primaryColor.value = themeConfig.value.primaryColor
-  // 加载用户信息用于 Footer 显示
-  userStore.fetchUserInfo()
-  userStore.fetchUserContacts()
-})
-
-interface Article {
-  id: number
-  title: string
-  content: string
-  excerpt: string | null
-  viewCount: number
-  likeCount: number
-  publishedAt: string | null
-  category?: { id: number; name: string } | null
-  tags?: Array<{ id: number; name: string }>
-}
+type Article = ArticleDetail
 
 interface TocItem {
   id: string
@@ -151,11 +117,6 @@ const renderedContent = ref('')
 const tocItems = ref<TocItem[]>([])
 const activeHeading = ref('')
 const isAdminPreview = computed(() => route.meta.adminPreview === true)
-
-const relatedArticles = computed(() => {
-  const allArticles = getAllArticles()
-  return allArticles.filter(a => a.id !== article.value?.id).slice(0, 3)
-})
 
 const md = new MarkdownIt({
   html: true,
@@ -177,10 +138,6 @@ const escapeHtml = (str: string): string => {
   const div = document.createElement('div')
   div.textContent = str
   return div.innerHTML
-}
-
-const getAllArticles = (): Article[] => {
-  return []
 }
 
 const extractToc = (content: string) => {
@@ -335,12 +292,6 @@ const fetchArticle = async () => {
     console.error('Failed to fetch article:', error)
     article.value = null
   }
-}
-
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
 watch(() => [route.params.id, route.params.slug, route.meta.adminPreview], () => {

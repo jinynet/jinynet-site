@@ -384,10 +384,8 @@ const fetchFiles = async () => {
       page.value,
       pageSize.value
     )
-    console.log('文件列表响应:', response)
     if (response.data) {
       const data = response.data
-      console.log('数据内容:', data)
       // 兼容多种分页数据结构
       if (data.content) {
         // Jimmer Page 对象格式
@@ -436,7 +434,6 @@ const fetchFiles = async () => {
     if (totalCount.value === 0 && files.value.length > 0) {
       totalCount.value = files.value.length
     }
-    console.log('文件列表:', files.value, '总数:', totalCount.value, '总页数:', pageCount.value)
   } catch (error) {
     console.error('获取文件列表失败:', error)
     files.value = []

@@ -1,85 +1,29 @@
 import axios from './axios'
+import type {
+  ArticleListItem,
+  ArticleDetail,
+  ArticleCategory,
+  ArticleTag,
+  ArticleForm,
+  ArticleQuery,
+  CategoryInput,
+  TagInput,
+} from '@/types'
 
-// 文章列表视图 - 后端 ArticleList DTO
-export interface ArticleList {
-  id: number
-  title: string
-  slug: string
-  excerpt: string | null
-  coverImage: string | null
-  status: 'draft' | 'published' | 'private'
-  viewCount: number
-  likeCount: number
-  publishedAt: string | null
-  updatedAt: string
+// 类型重新导出（向后兼容），实际定义见 @/types
+export type {
+  ArticleListItem,
+  ArticleDetail,
+  ArticleCategory,
+  ArticleTag,
+  ArticleForm,
+  ArticleQuery,
+  CategoryInput,
+  TagInput,
 }
 
-// 文章详情视图 - 后端 ArticleDetail DTO
-export interface ArticleDetail extends ArticleList {
-  content: string
-}
-
-// 分类对象
-export interface CategoryInput {
-  id?: number
-  name: string
-  slug: string
-  description: string | null
-  sortOrder: number | 0
-}
-
-// 标签对象
-export interface TagInput {
-  id?: number
-  name: string
-  slug: string
-  description: string | null
-  sortOrder: number | 0
-}
-
-// 文章表单 - 后端 ArticleForm DTO
-export interface ArticleForm {
-  title: string
-  slug: string
-  content: string
-  excerpt: string | null
-  coverImage: string | null
-  status: 'draft' | 'published' | 'private'
-  category?: CategoryInput | null
-  tags?: TagInput[]
-}
-
-// 文章查询条件 - 后端 ArticleSpecification DTO
-export interface ArticleQuery {
-  pageIndex: number
-  pageSize: number
-  title?: string           // like 模糊搜索
-  excerpt?: string         // like 模糊搜索
-  content?: string         // like 模糊搜索
-  status?: string          // eq 精确匹配
-  publishedAtStart?: string // ge 大于等于
-  publishedAtEnd?: string   // le 小于等于
-  orderBy?: string         // 排序字段，如 "updatedAt desc"
-}
-
-// 文章分类
-export interface ArticleCategory {
-  id: number
-  name: string
-  slug: string
-  description: string | null
-  sortOrder: number
-}
-
-// 文章标签
-export interface ArticleTag {
-  id: number
-  name: string
-  slug: string
-  color: string | null
-  description: string | null
-  sortOrder: number
-}
+/** @deprecated 请使用 ArticleListItem */
+export type ArticleList = ArticleListItem
 
 // 文章管理 API - 完整路径: /api/admin/articles
 export const getArticles = (params: ArticleQuery) => {

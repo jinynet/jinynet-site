@@ -3,6 +3,7 @@ import type { VideoList } from '@/api/videos'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme'
 import { ref, onMounted } from 'vue'
+import { formatDate } from '@/utils/formatDate'
 
 defineProps<{
   video: VideoList
@@ -18,11 +19,6 @@ const formatDuration = (seconds: number) => {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }
 
-const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('zh-CN')
-}
-
 const formatViewCount = (count: number) => {
   if (count >= 10000) {
     return (count / 10000).toFixed(1) + '万'
@@ -33,6 +29,8 @@ const formatViewCount = (count: number) => {
 const goToVideo = (video: VideoList) => {
   router.push(`/videos/${video.id}`)
 }
+
+const formatVideoDate = (dateStr: string | null) => formatDate(dateStr) || '-'
 
 onMounted(() => {
   themeMode.value = themeConfig.value.themeMode
@@ -78,7 +76,7 @@ onMounted(() => {
         <span>{{ formatViewCount(video.viewCount ?? 0) }} 播放</span>
       </div>
       <div class="mt-2 text-xs" :class="themeMode === 'dark' ? 'text-gray-500' : 'text-gray-400'">
-        {{ formatDate(video.publishedAt ?? '') }}
+        {{ formatVideoDate(video.publishedAt ?? '') }}
       </div>
     </div>
   </div>
